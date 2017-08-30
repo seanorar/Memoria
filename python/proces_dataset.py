@@ -1,7 +1,8 @@
 import glob
+from pathlib import Path
 
 def get_files_to_txt(path, path_out):
-    file_names = glob.glob(path + "*.JPEG")
+    file_names = glob.glob(path + "*")
     for i in xrange(len(file_names)):
         sep = file_names[i].split("/")
         temp_name = sep[len(sep)-1]
@@ -9,8 +10,10 @@ def get_files_to_txt(path, path_out):
         file_names[i] = sep[0]
     file_names.sort()
     with open(path_out + 'output.txt', 'w') as file:
+	index = 1
         for element in file_names:
-            file.write(element+"\n")
+            file.write(element +" "+ str(index) + "\n")
+            index+=1
 
 
 def load_200(file_name):
@@ -47,6 +50,16 @@ def generate_train_set(txt_file, path_out):
             for element in dict_clases[key]:
                 file.write(element + "\n")
 
-
-#get_files_to_txt("/media/sebastian/TOSHIBA EXT/imagenet/join/all/", "/home/sebastian/Escritorio/")
-generate_train_set("/home/sebastian/Escritorio/output.txt", "/home/sebastian/Escritorio/output2.txt")
+def check_files(path_txt, path_folder):
+	with open(path_txt) as f:
+        	lines = f.readlines()
+		for line in lines:
+			file_name = line.split(" ")[0]
+			#print path_folder +"ILSVRC2013_DET_bbox_trai/" + file_name + ".xml"
+			file_xml = Path(path_folder +"ILSVRC2013_DET_bbox_trai/" + file_name + ".xml")
+			file_jpg = Path(path_folder +"ILSVRC2013_DET_trai/" + file_name + ".JPEG")
+			if not (file_xml.is_file() and file_jpg.is_file()):
+				print "error in " + file_name
+check_files("/home/sormeno/Datasets/Imagenet2014/ILSVRC13/data/det_lists/train.txt", "/home/sormeno/Datasets/Imagenet2014/ILSVRC13/")
+#get_files_to_txt("/home/sormeno/Datasets/Imagenet2014/ILSVRC13/train_xml/", "/home/sormeno/1_")
+#generate_train_set("/home/sebastian/Escritorio/output.txt", "/home/sebastian/Escritorio/output2.txt")
