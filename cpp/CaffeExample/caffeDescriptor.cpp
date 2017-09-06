@@ -210,7 +210,8 @@ vector <int> get_similar(vector <cv::Mat> mat_consultas, string feature_data, st
                 string im_name = to_string(i);
                 readFile.read ((char*)result, sizeof(float)*4096);
                 cv::Mat mat_im = cv::Mat(1, 4096, CV_32F, result);
-		for(int k = 0; k < mat_consultas.size(); k += 1){
+		int n_vectores = mat_consultas.size();
+		for(int k = 0; k < n_vectores; k += 1){
 			cv::Mat mat_consulta = mat_consultas.at(k);
                 	double dist = cv::norm(mat_consulta, mat_im);
                 	dist_list.push_back(make_pair(dist ,im_name));
@@ -219,15 +220,17 @@ vector <int> get_similar(vector <cv::Mat> mat_consultas, string feature_data, st
         readFile.close();
         sort(dist_list.begin(),dist_list.end());
 	vector<int> final_result;
-        for(int i = 0; i < dist_list.size(); i += 1){
+	int n_dist = dist_list.size();
+        for(int i = 0; i < n_dist; i += 1){
                 final_result.push_back(stoi(dist_list.at(i).second));
 	} 
 	return final_result;
 }
 
 void save_result_im(vector <int> f_roi_id, vector <vector< double >> shots_info, string path_img,  string path_out, vector <int> pos = vector<int>()){
-	if (pos.size()>0){
-		for (int k = 0; k < pos.size(); k+=1){
+	int len_pos = pos.size();
+	if ( len_pos > 0){
+		for (int k = 0; k < len_pos; k+=1){
 			int i = pos.at(k);
 			int x1 = shots_info.at(f_roi_id.at(i)).at(0);
                         int x2 = shots_info.at(f_roi_id.at(i)).at(2);
@@ -291,12 +294,13 @@ double eval_map(string img_folder,string im_name, int num_images, int c_id, stri
                 string bbox_data = work_path + "test_s3_" + video_id + ".txt";
                 vector <int> r = get_similar(mat_consultas, f_data, bbox_data);
                 vector <int> shots_id = get_shot_id(bbox_data);
-                int n_shots = shots_id.at(shots_id.size() - 1);
+		int len_shots_id = shots_id.size();
+                int n_shots = shots_id.at(len_shots_id - 1);
                 vector <int> in_list(n_shots, 0);
 		vector <int> f_roi_id;
                 vector <int> f_shot_id;
-		
-                for (int i = 0; i < shots_id.size(); i += 1){
+	
+                for (int i = 0; i < len_shots_id; i += 1){
                         int id_element = shots_id.at(r.at(i));
                         if (in_list[id_element] == 0){
                                 f_shot_id.push_back(id_element + 1);
@@ -355,7 +359,8 @@ void evaluacion(){
 
 void save_videos_roi(string path_shots,string  bbox_file, string path_out){
 	vector <vector<double>> shots_info = get_shot_info(bbox_file);
-	for (int i = 0; i < shots_info.size(); i += 1){
+	int len_shots_info = shots_info.size();
+	for (int i = 0; i < len_shots_info; i += 1){
 		vector<double> info = shots_info.at(i);
 		int x1 = info.at(0);
                 int x2 = info.at(2);
@@ -396,6 +401,7 @@ int main(int argc, char* argv[]){
 
 	//string im_name = argv[1];
 	//get_top_100_roi(im_name);
+	cout << "end" << endl;
 	
 	return 0;
 }
