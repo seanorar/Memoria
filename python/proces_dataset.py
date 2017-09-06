@@ -1,6 +1,6 @@
 import glob
-import requests
-from pathlib import Path
+#import requests
+#from pathlib import Path
 from img_processing import zero_padding
 import cv2
 
@@ -60,6 +60,7 @@ def get_img_from_url(image_url):
     with open('/home/sebastian/Escritorio/img_instant_search/' + img_name, 'wb') as handler:
         handler.write(img_data)
 
+
 def padding_to_dataset(imgs_dir_path, txt_path, output):
     with open(txt_path) as f:
         lines = f.readlines()
@@ -73,6 +74,61 @@ def padding_to_dataset(imgs_dir_path, txt_path, output):
             cv2.imwrite(output+img_name+".PNG")
             if (counter%1000==0):
                 print str((counter/num_files)*100) + " %"
+
+def mod_xml(xml_path, size, outh_xml):
+    new_xml = []
+    with open(xml_path) as f:
+        lines = f.readlines()
+        for line in lines:
+            if "<width>" in line:
+                val = line.split(">")[1].split("<")[0]
+                new_val = int(val) + size*2
+                line_split = line.split(val)
+                new_line = line_split[0] + str(new_val) + line_split[1]
+            elif "<height>" in line:
+                val = line.split(">")[1].split("<")[0]
+                new_val = int(val) + size * 2
+                line_split = line.split(val)
+                new_line = line_split[0] + str(new_val) + line_split[1]
+            elif "<xmin>" in line:
+                val = line.split(">")[1].split("<")[0]
+                new_val = int(val) + size
+                line_split = line.split(val)
+                new_line = line_split[0] + str(new_val) + line_split[1]
+            elif "<xmax>" in line:
+                val = line.split(">")[1].split("<")[0]
+                new_val = int(val) + size
+                line_split = line.split(val)
+                new_line = line_split[0] + str(new_val) + line_split[1]
+            elif "<ymin>" in line:
+                val = line.split(">")[1].split("<")[0]
+                new_val = int(val) + size
+                line_split = line.split(val)
+                new_line = line_split[0] + str(new_val) + line_split[1]
+            elif "<ymax>" in line:
+                val = line.split(">")[1].split("<")[0]
+                new_val = int(val) + size
+                line_split = line.split(val)
+                new_line = line_split[0] + str(new_val) + line_split[1]
+            else:
+                new_line = line
+            new_xml.append(new_line)
+            with open(outh_xml, 'w') as file:
+                for line in new_xml:
+                    file.write(line)
+
+def padding_xml_to_dataset(xml_dir_path, txt_path, output):
+    with open(txt_path) as f:
+        lines = f.readlines()
+        num_files = len(lines)
+        counter = 0.0
+        for line in lines:
+            counter +=1
+            xml_name = lines.split[" "]
+            mod_xml(xml_dir_path + xml_name + ".xml", 25, output+xml_name+".xml")
+            if (counter%1000==0):
+                print str((counter/num_files)*100) + " %"
+                
 
 def check_files(path_txt, path_folder):
 	with open(path_txt) as f:
@@ -94,6 +150,7 @@ def get_urls_imgs():
             print(url_img)
             get_img_from_url(url_img)
 
+mod_xml("/home/sebastian/Escritorio/ILSVRC2014_train_00000001.xml", 25, "/home/sebastian/Escritorio/ILSVRC2014_train_00000001_2.xml")
 #check_files("/home/sormeno/Datasets/Imagenet2014/ILSVRC13/data/det_lists/train.txt", "/home/sormeno/Datasets/Imagenet2014/ILSVRC13/")
 #get_files_to_txt("/home/sormeno/Datasets/Imagenet2014/ILSVRC13/train_xml/", "/home/sormeno/1_")
 #generate_train_set("/home/sebastian/Escritorio/output.txt", "/home/sebastian/Escritorio/output2.txt")
