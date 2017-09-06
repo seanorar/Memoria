@@ -70,15 +70,14 @@ def check_files(path_txt, path_folder):
 			if not (file_xml.is_file() and file_jpg.is_file()):
 				print "error in " + file_name
 
-
-with open("/home/sebastian/Escritorio/img_instant_search/imgs.txt") as f:
-    lines = f.readlines()
-    for line in lines:
-        line = line.rstrip()
-        url_img = "http://www-nlpir.nist.gov/projects/tv2013/pastdata/instance.search.topics/tv13.example.images/" + line
-        print(url_img)
-        get_img_from_url(url_img)
-
+def get_urls_imgs():
+    with open("/home/sebastian/Escritorio/img_instant_search/imgs.txt") as f:
+        lines = f.readlines()
+        for line in lines:
+            line = line.rstrip()
+            url_img = "http://www-nlpir.nist.gov/projects/tv2013/pastdata/instance.search.topics/tv13.example.images/" + line
+            print(url_img)
+            get_img_from_url(url_img)
 
 #check_files("/home/sormeno/Datasets/Imagenet2014/ILSVRC13/data/det_lists/train.txt", "/home/sormeno/Datasets/Imagenet2014/ILSVRC13/")
 #get_files_to_txt("/home/sormeno/Datasets/Imagenet2014/ILSVRC13/train_xml/", "/home/sormeno/1_")
