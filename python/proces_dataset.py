@@ -1,6 +1,6 @@
 import glob
 #import requests
-#from pathlib import Path
+from pathlib import Path
 from img_processing import zero_padding
 import cv2
 
@@ -68,12 +68,12 @@ def padding_to_dataset(imgs_dir_path, txt_path, output):
         counter = 0.0
         for line in lines:
             counter +=1
-            img_name = lines.split[" "]
-            img = cv2.imread(imgs_dir_path+img_name+".PNG")
-            new_img = zero_padding(img_name, 25)
-            cv2.imwrite(output+img_name+".PNG")
-            if (counter%1000==0):
-                print str((counter/num_files)*100) + " %"
+            img_name = line.split(" ")[0]
+            img = cv2.imread(imgs_dir_path+img_name+".JPEG")
+            new_img = zero_padding(img, 25)
+            cv2.imwrite(output+img_name+".JPEG", new_img)
+            if (counter%100==0):
+                print str(int((counter/num_files)*100)) + "%"
 
 def mod_xml(xml_path, size, outh_xml):
     new_xml = []
@@ -150,7 +150,11 @@ def get_urls_imgs():
             print(url_img)
             get_img_from_url(url_img)
 
-mod_xml("/home/sebastian/Escritorio/ILSVRC2014_train_00000001.xml", 25, "/home/sebastian/Escritorio/ILSVRC2014_train_00000001_2.xml")
+txt_path = "/home/sormeno/Datasets/Imagenet2014/ILSVRC13/data/det_lists/train.txt"
+imgs_dir_path = "/home/sormeno/Datasets/Imagenet2014/ILSVRC13/ILSVRC2013_DET_trai/"
+output  = "/home/sormeno/Datasets/Imagenet2014/ILSVRC13/ILSVRC2013_DET_trai_2/"
+padding_to_dataset(imgs_dir_path, txt_path, output)
+
 #check_files("/home/sormeno/Datasets/Imagenet2014/ILSVRC13/data/det_lists/train.txt", "/home/sormeno/Datasets/Imagenet2014/ILSVRC13/")
 #get_files_to_txt("/home/sormeno/Datasets/Imagenet2014/ILSVRC13/train_xml/", "/home/sormeno/1_")
 #generate_train_set("/home/sebastian/Escritorio/output.txt", "/home/sebastian/Escritorio/output2.txt")
