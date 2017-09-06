@@ -1,4 +1,5 @@
 import glob
+import requests
 
 def get_files_to_txt(path, path_out):
     file_names = glob.glob(path + "*.JPEG")
@@ -47,6 +48,22 @@ def generate_train_set(txt_file, path_out):
             for element in dict_clases[key]:
                 file.write(element + "\n")
 
+def get_img_from_url(image_url):
+    img_data = requests.get(image_url).content
+    name_split = image_url.split("/")
+    img_name = name_split[len(name_split)-1]
+    with open('/home/sebastian/Escritorio/img_instant_search/' + img_name, 'wb') as handler:
+        handler.write(img_data)
+
+
+
+with open("/home/sebastian/Escritorio/img_instant_search/imgs.txt") as f:
+    lines = f.readlines()
+    for line in lines:
+        line = line.rstrip()
+        url_img = "http://www-nlpir.nist.gov/projects/tv2013/pastdata/instance.search.topics/tv13.example.images/" + line
+        print(url_img)
+        get_img_from_url(url_img)
 
 #get_files_to_txt("/media/sebastian/TOSHIBA EXT/imagenet/join/all/", "/home/sebastian/Escritorio/")
-generate_train_set("/home/sebastian/Escritorio/output.txt", "/home/sebastian/Escritorio/output2.txt")
+#generate_train_set("/home/sebastian/Escritorio/output.txt", "/home/sebastian/Escritorio/output2.txt")
