@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 
-
 def change_background(img_name, img_out):
     image = cv2.imread(img_name)
     image[np.where((image == [0, 0, 0]).all(axis=2))] = [255, 255, 255]
@@ -39,7 +38,6 @@ def get_bbox_from_masc(img_masc):
                     ymin = i
     return [xmin, ymin, xmax, ymax]
 
-
 def get_roi_from_masc(img_masc, img_orig):
     bbox = get_bbox_from_masc(img_masc)
     new_img = img_orig[bbox[1]:bbox[3], bbox[0]:bbox[2]]
@@ -56,6 +54,10 @@ def apply_mask(img, mask):
     dst = cv2.merge(rgba, 4)
     cv2.imwrite("test.png", dst)
 
+def zero_padding(img, sp):
+    result = cv2.copyMakeBorder(img, sp,sp,sp,sp , cv2.BORDER_CONSTANT)
+    return  result
+
 def process_consultas():
     id_list = [9070, 9076, 9086, 9101, 9103, 9112]
     for id in id_list:
@@ -66,7 +68,6 @@ def process_consultas():
             cv2.imwrite("videos/objetos/r/" + str(id) + "." + str(i) + ".src.png", im)
 
 
-
 #process_consultas()
 #save_bbox_from_frame(5507,
 #                     "test_vgg_2.txt",
@@ -74,4 +75,4 @@ def process_consultas():
 #                     "/home/sebastian/Escritorio/vis/")
 img = cv2.imread("/home/sebastian/Escritorio/img_instant_search/9069.4.src.bmp")
 mask = cv2.imread("/home/sebastian/Escritorio/img_instant_search/9069.4.mask.bmp")
-apply_mask(img, mask)
+#apply_mask(img, mask)
