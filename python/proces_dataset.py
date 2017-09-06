@@ -1,6 +1,8 @@
 import glob
 import requests
 from pathlib import Path
+from img_processing import zero_padding
+import cv2
 
 def get_files_to_txt(path, path_out):
     file_names = glob.glob(path + "*")
@@ -58,6 +60,19 @@ def get_img_from_url(image_url):
     with open('/home/sebastian/Escritorio/img_instant_search/' + img_name, 'wb') as handler:
         handler.write(img_data)
 
+def padding_to_dataset(imgs_dir_path, txt_path, output):
+    with open(txt_path) as f:
+        lines = f.readlines()
+        num_files = len(lines)
+        counter = 0.0
+        for line in lines:
+            counter +=1
+            img_name = lines.split[" "]
+            img = cv2.imread(imgs_dir_path+img_name+".PNG")
+            new_img = zero_padding(img_name, 25)
+            cv2.imwrite(output+img_name+".PNG")
+            if (counter%1000==0):
+                print str((counter/num_files)*100) + " %"
 
 def check_files(path_txt, path_folder):
 	with open(path_txt) as f:
