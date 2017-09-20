@@ -34,8 +34,8 @@ def test_nearest():
             cv2.waitKey(0)
             cv2.destroyAllWindows()
 
-generate_txt_bbox("videos/s3_data_bbox1.npy", "test_s3_1.txt",3)
-generate_txt_bbox("videos/s3_data_bbox2.npy", "test_s3_2.txt",3)
-generate_txt_bbox("videos/s3_data_bbox3.npy", "test_s3_3.txt",3)
-generate_txt_bbox("videos/s3_data_bbox4.npy", "test_s3_4.txt",3)
+#generate_txt_bbox("/home/sormeno/Desktop/videos/1/data_bbox.npy", "/home/sormeno/Desktop/videos/1/bbox_1.txt",3)
+#generate_txt_bbox("/home/sormeno/Desktop/videos/2/data_bbox.npy", "/home/sormeno/Desktop/videos/2/bbox_2.txt",3)
+#generate_txt_bbox("/home/sormeno/Desktop/videos/3/data_bbox.npy", "/home/sormeno/Desktop/videos/3/bbox_3.txt",3)
+#generate_txt_bbox("/home/sormeno/Desktop/videos/4/data_bbox.npy", "/home/sormeno/Desktop/videos/4/bbox_4.txt",3)
 #test_nearest()

@@ -104,7 +104,7 @@ def get_all_bbox(imgs_names):
         raise IOError(('{:s} not found.\nDid you run ./data/script/'
                        'fetch_faster_rcnn_models.sh?').format(caffemodel))
 
-    caffe.set_mode_cpu()
+    caffe.set_mode_gpu()
     net = caffe.Net(prototxt, caffemodel, caffe.TEST)
 
     #test extract feature
@@ -145,7 +145,7 @@ def get_all_features(imgs_names, bboxs_list):
         raise IOError(('{:s} not found.\nDid you run ./data/script/'
                        'fetch_faster_rcnn_models.sh?').format(caffemodel))
 
-    caffe.set_mode_cpu()
+    caffe.set_mode_gpu()
     net = caffe.Net(prototxt, caffemodel, caffe.TEST)
 
     print '\n\nLoaded network {:s}'.format(caffemodel)
