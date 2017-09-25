@@ -82,7 +82,20 @@ def save_frames(video_path, list_id ,path_out):
             actual_index += 1
     cap.release()
 
-shot_detection("/home/sormeno/Desktop/videos/1/","5339374493641274357.mp4", "video1", "/home/sormeno/Desktop/")
+def get_shot_time(shot_number, shot_info_file):
+    with open(shot_info_file) as f:
+        lines = f.readlines()
+        info_shot = lines[shot_number-1]
+        split_str = info_shot.split(" ")
+	start_time = float(split_str[2].split("--start-time=")[1])
+        end_time = float(split_str[3].split("--stop-time=")[1])
+        return (start_time, end_time)
+
+    
+
+
+print get_shot_time(10, "/home/sormeno/Desktop/videos/1/5339374493641274357.shots")
+#shot_detection("/home/sormeno/Desktop/videos/1/","5339374493641274357.mp4", "video1", "/home/sormeno/Desktop/")
 #r = get_shots_id("/home/sormeno/Desktop/videos/1/5339374493641274357.shots")
 #save_frames("videos/1/5339374493641274357.mp4", r, "videos/1/shots/")
 
