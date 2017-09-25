@@ -89,7 +89,7 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-def get_all_bbox(imgs_names):
+def get_all_bbox(imgs_names, mode = "gpu"):
 
     cfg.TEST.HAS_RPN = True  # Use RPN for proposals
 
@@ -103,8 +103,12 @@ def get_all_bbox(imgs_names):
     if not os.path.isfile(caffemodel):
         raise IOError(('{:s} not found.\nDid you run ./data/script/'
                        'fetch_faster_rcnn_models.sh?').format(caffemodel))
+    if (mode=="gpu"):
+        caffe.set_mode_gpu()
+    else:
+        caffe.set_mode_cpu()
 
-    caffe.set_mode_cpu()
+
     net = caffe.Net(prototxt, caffemodel, caffe.TEST)
 
     #test extract feature
@@ -145,7 +149,7 @@ def get_all_features(imgs_names, bboxs_list):
         raise IOError(('{:s} not found.\nDid you run ./data/script/'
                        'fetch_faster_rcnn_models.sh?').format(caffemodel))
 
-    caffe.set_mode_cpu()
+    caffe.set_mode_gpu()
     net = caffe.Net(prototxt, caffemodel, caffe.TEST)
 
     print '\n\nLoaded network {:s}'.format(caffemodel)

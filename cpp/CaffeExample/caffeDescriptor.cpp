@@ -394,6 +394,7 @@ void save_videos_roi(string path_shots,string  bbox_file, string path_out){
 }
 
 int main(int argc, char* argv[]){
+<<<<<<< HEAD
 	/*	
 	for(int i = 1; i < 2; i += 1){
 		string shots_data = "/home/sormeno/data/ndata/shots"+to_string(i)+"/";
@@ -419,6 +420,36 @@ int main(int argc, char* argv[]){
         //string im_name = argv[1];
         //get_top_100_roi(im_name);
 
+=======
+	///*	
+	for(int i = 1; i < 5; i += 1){
+		string shots_data = "/home/sormeno/Desktop/videos/" + to_string(i) + "/shots/";
+		string bbox_data = "/home/sormeno/Desktop/videos/" + to_string(i) + "/bbox_"+to_string(i)+".txt";
+		string out_p = "/home/sormeno/Desktop/videos/features_"+to_string(i)+".bin";
+		get_features(shots_data, bbox_data, out_p);
+	}
+	//*/
+
+	/*
+	if (argc != 6){
+		cout << "Llamar funcion con nombre de imagen , su identificador y carpeta de trabajo" << endl;
+		return 1;
+	}
+	string im_folder = argv[1];
+	string im_name = argv[2];
+	int num_images = stoi(argv[3]);
+	int c_id = stoi(argv[4]);
+	string path = argv[5];
+	eval_map(im_folder, im_name ,num_images, c_id, path);
+	*/
+
+	//evaluacion();
+
+	//string im_name = argv[1];
+	//get_top_100_roi(im_name);
+	cout << "end" << endl;
+	
+>>>>>>> 70c55a6d36ea6cdd4392d6e5f4b4fb43f9238e00
 	return 0;
 }
 
