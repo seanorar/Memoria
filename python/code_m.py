@@ -11,9 +11,7 @@ from PIL import Image
 #obtiene todos los frames de un video
 def list_frames(video_name, fps, folder, min_limit = -1):
     cap = cv2.VideoCapture(video_name)
-    print cap
     fps_video = cap.get(cv2.CAP_PROP_FPS)
-    print fps_video
     if (fps > fps_video):
         fps = fps_video
     contador = int(fps_video / fps)
@@ -97,7 +95,7 @@ def save_bbox(path,inicio,fin, out):
     for i in range(inicio, fin):
         im_name = path + str(i) + ".jpg"
         images.append(im_name)
-    result = get_all_bbox(images)
+    result = get_all_bbox(images,"gpu")
     np.save(out + "data_names", images)
     np.save(out + "data_bbox", result)
 
@@ -298,9 +296,10 @@ def test_dist(feature):
 ##save_bbox("videos/2/shots/", 1850, 1851, "prueba_rois/")
 ##save_bbox_images("prueba_rois/data_names.npy", "prueba_rois/data_bbox.npy", "prueba_rois/", 0)
 
-#save_bbox("videos/2/shots/",0,2037,"videos/2/")
-#save_bbox("videos/3/shots/",0,2111,"videos/3/")
-#save_bbox("videos/4/shots/",0,3019,"videos/4/")
+save_bbox("/home/sormeno/Desktop/videos/1/shots/", 0, 5924, "/home/sormeno/Desktop/videos/1/")
+#save_bbox("/home/sormeno/Desktop/videos/2/shots/", 0, 6111, "/home/sormeno/Desktop/videos/2/")
+#save_bbox("/home/sormeno/Desktop/videos/3/shots/", 0, 6333, "/home/sormeno/Desktop/videos/3/")
+#save_bbox("/home/sormeno/Desktop/videos/4/shots/", 0, 9057, "/home/sormeno/Desktop/videos/4/")
 
 #lista = [0, 13296, 1941, 338, 4747, 13484, 586, 11711, 18310, 18695, 9329, 13583, 18241, 1 5548, 517, 18599, 18200, 38, 16883, 191, 14803, 8115, 1967, 18750, 17173]
 #lista_f = []

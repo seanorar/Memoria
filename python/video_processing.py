@@ -1,0 +1,96 @@
+import cv2
+import numpy as np
+from skimage import feature, io
+import scipy
+from scipy.spatial import distance
+
+def operate_dist_list1(list):
+    total = sum(list)/len(list)
+    return total
+
+def get_lbp_distance(lbp1, lbp2):
+    result = []
+    for i in range (0, len(lbp1)):
+        result.append(distance.euclidean(lbp1[i],lbp2[i]))
+    return result
+
+def complete_lbp(image):
+    desc = feature.local_binary_pattern(image,24, 3,  method = "uniform")
+    histogram = scipy.stats.itemfreq(desc)
+    return [histogram[:,1]]
+
+def shot_detection(path_video, video_name, id_video, path_output):
+    with open(path_output + 'output.shots', 'w') as file:
+        cap = cv2.VideoCapture(path_video + video_name)
+        fps_video = cap.get(cv2.CAP_PROP_FPS)
+        time_slap = 1.0 / fps_video
+        ret , frame = cap.read()
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        lbpi = complete_lbp(frame)
+        umbral = 13000
+        shot_contador = 0
+        i = 1
+        end = -1 
+        while (ret):
+            if (i == i):
+                ret , frame = cap.read()
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                lbpf = complete_lbp(frame)
+                distancia = abs(operate_dist_list1(get_lbp_distance(lbpi, lbpf)))
+                if (umbral < distancia):
+                    print i
+                    shot_contador += 1
+                    #cv2.imwrite("/home/sormeno/Desktop/test/" + str(i) + ".jpg", frame)
+		    video_id = id_video + "_" + str(shot_contador)
+                    start = end + 1
+                    end = i
+                    time_start = start * time_slap
+                    time_end = end * time_slap
+                    file.write(video_id + "\t"+str(start) + "\t" + str(end) + "\t" + "vlc " + video_name + " --start-time=" + str(time_start) + " --stop-time=" + str(time_end)+"\n")
+                lbpi = lbpf
+                i += 1
+
+
+def get_shots_id(shots_file):
+    id_shots=[]
+    fo = open(shots_file, "rw+")
+    current_id = 0
+    for line in fo.readlines():
+        line_split = line.split("\t")
+        shot_ini = int(line_split[1])
+        shot_fin = int(line_split[2])
+        id_shots.append((shot_ini, current_id))
+        id_shots.append((int((shot_fin + shot_ini) / 2), current_id))
+        id_shots.append((shot_fin, current_id))
+        current_id += 1
+    fo.close()
+    return id_shots
+
+def save_frames(video_path, list_id ,path_out):
+    cap = cv2.VideoCapture(video_path)
+    ret = True
+    actual_index_shot = 0
+    actual_index = 0
+    n_shots = len(list_id)
+    while(ret):
+        ret, frame = cap.read()
+        if (actual_index_shot < n_shots):
+            if (list_id[actual_index_shot][0] == actual_index):
+                filename = str(actual_index_shot) + ".jpg"
+                cv2.imwrite(path_out + filename, frame)
+                actual_index_shot += 1
+            actual_index += 1
+    cap.release()
+
+shot_detection("/home/sormeno/Desktop/videos/1/","5339374493641274357.mp4", "video1", "/home/sormeno/Desktop/")
+#r = get_shots_id("/home/sormeno/Desktop/videos/1/5339374493641274357.shots")
+#save_frames("videos/1/5339374493641274357.mp4", r, "videos/1/shots/")
+
+#r = get_shots_id("videos/2/5092591256270557686.shots")
+#save_frames("videos/2/5092591256270557686.mp4", r, "videos/2/shots/")
+
+#r = get_shots_id("videos/3/5154964489329981991.shots")
+#save_frames("videos/3/5154964489329981991.mp4", r, "videos/3/shots/")
+
+#r = get_shots_id("videos/4/5419885803088443114.shots")
+#save_frames("videos/4/5419885803088443114.mp4", r, "videos/4/shots/")
