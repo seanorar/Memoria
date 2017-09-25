@@ -1,7 +1,10 @@
 import glob
+import os
 
 def get_files_to_txt(path, path_out):
-    file_names = glob.glob(path + "*.JPEG")
+    file_names = []
+    print glob.glob("*")
+    print file_names
     for i in xrange(len(file_names)):
         sep = file_names[i].split("/")
         temp_name = sep[len(sep)-1]
@@ -48,5 +51,5 @@ def generate_train_set(txt_file, path_out):
                 file.write(element + "\n")
 
 
-#get_files_to_txt("/media/sebastian/TOSHIBA EXT/imagenet/join/all/", "/home/sebastian/Escritorio/")
-generate_train_set("/home/sebastian/Escritorio/output.txt", "/home/sebastian/Escritorio/output2.txt")
+get_files_to_txt("/home/sormeno/Datasets/Imagenet/join/", "/home/sormeno/")
+#generate_train_set("/home/sebastian/Escritorio/output.txt", "/home/sebastian/Escritorio/output2.txt")
