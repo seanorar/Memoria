@@ -9,8 +9,8 @@ using namespace std;
 
 void normalize(float lista[], int len){
     	
-	float total=0;
-    	for (int i =0; i< len; i+=1){
+	float total = 0;
+    	for (int i = 0; i < len; i += 1){
         	float sign = 0;
        		float val = lista[i];
         	if (val > 0){
@@ -19,7 +19,7 @@ void normalize(float lista[], int len){
         	else{
             		sign = -1;
        		}
-        	val = sqrt(abs(val))*sign;
+        	val = sqrt(abs(val)) * sign;
         	lista[i] = val;
     	}
     	for (int i =0; i< len; i+=1){
@@ -27,11 +27,11 @@ void normalize(float lista[], int len){
     	}
 
     	total = sqrt(total);
-    	for (int i =0; i< len; i+=1){
+    	for (int i = 0; i < len; i += 1){
     		lista[i] = lista[i]/total;
     	}
 }
-
+ 
 void proces_line(string line, double buffer[]){
 	
 	istringstream iss(line);
@@ -274,32 +274,39 @@ void get_top_100_roi(string img_path){
 	}
 }
 
-double eval_map(string img_folder,string im_name, int num_images, int c_id, string work_path){
+double eval_map(string img_folder,string im_name, int num_images, int c_id, string work_path, int mode){
 	vector <cv::Mat> mat_consultas;
 	for(int i = 1; i <= num_images; i += 1){
-		string str_image = img_folder + im_name +"." +to_string(i) + ".src.png";
+		string str_image;
+		if (mode==1){
+			str_image = img_folder + im_name +"." +to_string(i) + ".src.png";
+		}
+		else{
+			str_image = img_folder + im_name +"." +to_string(i) + ".src2.png";
+		}
 		cout <<str_image<<endl;
         	cv::Mat mat_consulta = get_feature(str_image);
 		mat_consultas.push_back(mat_consulta);
 	}
-	string gt_filename = "/home/sormeno/data/gt.txt";
+	string gt_filename = "/home/sormeno/data/gt2.txt";
         float final_map = 0;
 	cout << "---------------- " << endl;
 	int denominador = 0;
+
         for (int id = 1; id < 2; id += 1){
+
                 cout << "Trabajando en video " << id << endl;
                 string video_id = to_string(id);
 		string shots_img = work_path + "shots" + video_id + "/";
-                string f_data = work_path + "features" + video_id + "_s3.bin";
-                string bbox_data = work_path + "test_s3_" + video_id + ".txt";
+                string f_data = work_path + "features" + video_id + "_s5.bin";
+                string bbox_data = work_path + "test_s5_" + video_id + ".txt";
                 vector <int> r = get_similar(mat_consultas, f_data, bbox_data);
                 vector <int> shots_id = get_shot_id(bbox_data);
 		int len_shots_id = shots_id.size();
                 int n_shots = shots_id.at(len_shots_id - 1);
-                vector <int> in_list(n_shots, 0);
+                vector <int> in_list(n_shots + 1, 0);
 		vector <int> f_roi_id;
                 vector <int> f_shot_id;
-	
                 for (int i = 0; i < len_shots_id; i += 1){
                         int id_element = shots_id.at(r.at(i));
                         if (in_list[id_element] == 0){
@@ -311,7 +318,7 @@ double eval_map(string img_folder,string im_name, int num_images, int c_id, stri
 		vector <int> gt_list = gt(gt_filename, stoi(video_id), c_id);
 		vector <vector<double>> shots_info = get_shot_info(bbox_data);
 		if (gt_list.size() == 0){
-			string path_out = "/home/sormeno/data/result/m2/" + video_id + "/";
+			string path_out = "/home/sormeno/data/result/" + to_string(mode) + "/" + im_name  + "/m2/" + video_id + "/";
 			cout << endl <<"Shots detectados" << endl;
 			cout << "[";
 			for(int k = 0;k < 25; k += 1){
@@ -322,7 +329,7 @@ double eval_map(string img_folder,string im_name, int num_images, int c_id, stri
 		}
 		else{
 			denominador += 1;
-			string path_out = "/home/sormeno/data/result/m1/" + video_id + "/";
+			string path_out = "/home/sormeno/data/result/" + to_string(mode) + "/" + im_name  + "/m1/" + video_id + "/";
                 	tuple <float, vector <int>> ap = get_ap(f_shot_id, gt_list);
                 	cout  << "AP = " << get<0>(ap) << endl;
                 	final_map += get<0>(ap);
@@ -330,30 +337,42 @@ double eval_map(string img_folder,string im_name, int num_images, int c_id, stri
 		}
 		cout << "---------------- " << endl;
         }
+	if (denominador ==0){
+		cout << "MAP = " << (0) << endl;
+        	return 0;
+	}
         cout << "MAP = " << (final_map / denominador) << endl;
 	return (final_map / denominador);
 }
 
-void evaluacion(){
-	int consultas[6] = {9070, 9076, 9086, 9101, 9103, 9112};
+
+void evaluacion(int mode){
+	vector<int> consultas;
+	for(int i = 9069; i < 9129; i+=1){
+		consultas.push_back(i);
+	}
 	float f_result = 0;
+	float den = 0;
 	vector <float> parcial_result;
-	for (int i =0; i<6; i+=1){
-		string path = "/home/sormeno/data/ndata/t/r/" ;
-		string im_name = to_string(consultas[i]);
+	for (int i =0; i < consultas.size(); i += 1){
+		string path = "/home/sormeno/data/queries/";
+		string im_name = to_string(consultas.at(i));
 		int num_img = 4;
-		int c_id = consultas[i];
+		int c_id = 0;//consultas.at(i);
 		string path_data = "/home/sormeno/data/ndata/";
-		float result_eval = eval_map(path, im_name ,num_img, c_id, path_data);
+		float result_eval = eval_map(path, im_name ,num_img, c_id, path_data, mode);
 		parcial_result.push_back(result_eval);
-		f_result += result_eval;
+		if (result_eval != 0){
+			f_result += result_eval;
+			den += 1;
+		}
 	}
 	cout << "Resultados: " << endl;
-	for(int i = 0; i < 6; i += 1){
-		cout << "Imagen  " << i << " = " << parcial_result.at(i)<<endl;
+	for(int i = 0; i < consultas.size(); i += 1){
+		cout << "Imagen  " << consultas.at(i) << " = " << parcial_result.at(i)<<endl;
 	}
 	cout << "------------------------------------"<<endl<<endl;
-	cout <<"MAP final = "<< (f_result/6) << endl<<endl;
+	cout <<"MAP final = "<< (f_result/den) << endl<<endl;
 	cout << "------------------------------------"<<endl;
 }
 
@@ -378,31 +397,28 @@ int main(int argc, char* argv[]){
 	/*	
 	for(int i = 1; i < 2; i += 1){
 		string shots_data = "/home/sormeno/data/ndata/shots"+to_string(i)+"/";
-		string bbox_data = "/home/sormeno/data/ndata/test_s3_"+to_string(i)+".txt";
-		string out_p = "/home/sormeno/data/ndata/features"+to_string(i)+"_s3.bin";
+		string bbox_data = "/home/sormeno/data/ndata/test_s5_"+to_string(i)+".txt";
+		string out_p = "/home/sormeno/data/ndata/features"+to_string(i)+"_s5.bin";
 		get_features(shots_data, bbox_data, out_p);
 	}
 	*/
-
 	///*
-	if (argc != 6){
-		cout << "Llamar funcion con nombre de imagen , su identificador y carpeta de trabajo" << endl;
-		return 1;
-	}
-	string im_folder = argv[1];
-	string im_name = argv[2];
-	int num_images = stoi(argv[3]);
-	int c_id = stoi(argv[4]);
-	string path = argv[5];
-	eval_map(im_folder, im_name ,num_images, c_id, path);
-	//*/
+        if (argc != 6){
+                cout << "Llamar funcion con nombre de imagen , su identificador y carpeta de trabajo" << endl;
+                return 1;
+        }
+        string im_folder = argv[1];
+        string im_name = argv[2];
+        int num_images = stoi(argv[3]);
+        int c_id = stoi(argv[4]);
+        string path = argv[5];
+        eval_map(im_folder, im_name ,num_images, c_id, path, 1);
+        //*/
 
-	//evaluacion();
+        //evaluacion(1);
+        //string im_name = argv[1];
+        //get_top_100_roi(im_name);
 
-	//string im_name = argv[1];
-	//get_top_100_roi(im_name);
-	cout << "end" << endl;
-	
 	return 0;
 }
 
