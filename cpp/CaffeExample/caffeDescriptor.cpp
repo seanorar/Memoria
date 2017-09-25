@@ -375,16 +375,16 @@ void save_videos_roi(string path_shots,string  bbox_file, string path_out){
 }
 
 int main(int argc, char* argv[]){
-	/*	
-	for(int i = 1; i < 2; i += 1){
-		string shots_data = "/home/sormeno/data/ndata/shots"+to_string(i)+"/";
-		string bbox_data = "/home/sormeno/data/ndata/test_s3_"+to_string(i)+".txt";
-		string out_p = "/home/sormeno/data/ndata/features"+to_string(i)+"_s3.bin";
+	///*	
+	for(int i = 1; i < 5; i += 1){
+		string shots_data = "/home/sormeno/Desktop/videos/" + to_string(i) + "/shots/";
+		string bbox_data = "/home/sormeno/Desktop/videos/" + to_string(i) + "/bbox_"+to_string(i)+".txt";
+		string out_p = "/home/sormeno/Desktop/videos/features_"+to_string(i)+".bin";
 		get_features(shots_data, bbox_data, out_p);
 	}
-	*/
+	//*/
 
-	///*
+	/*
 	if (argc != 6){
 		cout << "Llamar funcion con nombre de imagen , su identificador y carpeta de trabajo" << endl;
 		return 1;
@@ -395,7 +395,7 @@ int main(int argc, char* argv[]){
 	int c_id = stoi(argv[4]);
 	string path = argv[5];
 	eval_map(im_folder, im_name ,num_images, c_id, path);
-	//*/
+	*/
 
 	//evaluacion();
 
