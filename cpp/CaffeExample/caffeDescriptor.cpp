@@ -57,13 +57,13 @@ void get_features(string dataset_shots, string dataset_bbox, string data_out){
 	int actual = 0;
 	long n_total = 0;
 	while (getline(file, str)){
-		double buffer[5];
+		double buffer[6];
 		proces_line(str, buffer);
 		if (actual != buffer[4]){
-			cout << buffer[4]<<endl;
+			cout << buffer[4] << endl;
 			actual = buffer[4];
 		}
-                string im_name = dataset_shots  + to_string((int)buffer[4]) + ".jpg";
+                string im_name = dataset_shots  + to_string((int)buffer[5]) + ".jpg";
                 cv::Mat aux_image = cv ::imread(im_name);
 		cv::Rect r((int)buffer[0],(int)buffer[1], (int)( buffer[2]-buffer[0]), (int) (buffer[3]-buffer[1]));		
         	cv::Mat im_bbox(aux_image, r);
@@ -227,6 +227,25 @@ vector <int> get_similar(vector <cv::Mat> mat_consultas, string feature_data, st
 	return final_result;
 }
 
+void test_pca(){
+        float result [4096];
+	string feature_data = "/home/sormeno/data/ndata/features_vgg_1.bin";
+	string bbox_data = "/home/sormeno/data/ndata/bbox_vgg_1.txt";
+        ifstream readFile (feature_data, ios::in | ios::binary);
+        long limit = num_lines(bbox_data);
+	cv::Mat all_features;
+        for(int i = 0; i < 100; i += 1){
+                readFile.read ((char*)result, sizeof(float)*4096);
+                cv::Mat mat_im = cv::Mat(1, 4096, CV_32F, result);
+		all_features.push_back(mat_im);
+        }
+        readFile.close();
+	cv::PCA pca(all_features, cv::Mat(), cv::PCA::DATA_AS_ROW, 100);
+	cv::FileStorage fs("/home/sormeno/pcadata",cv::FileStorage::WRITE);
+	pca.write(fs);
+	fs.release();
+}
+
 void save_result_im(vector <int> f_roi_id, vector <vector< double >> shots_info, string path_img,  string path_out, vector <int> pos = vector<int>()){
 	int len_pos = pos.size();
 	if ( len_pos > 0){
@@ -284,7 +303,7 @@ double eval_map(string img_folder,string im_name, int num_images, int c_id, stri
 		else{
 			str_image = img_folder + im_name +"." +to_string(i) + ".src2.png";
 		}
-		cout <<str_image<<endl;
+		cout << str_image << endl;
         	cv::Mat mat_consulta = get_feature(str_image);
 		mat_consultas.push_back(mat_consulta);
 	}
@@ -298,8 +317,8 @@ double eval_map(string img_folder,string im_name, int num_images, int c_id, stri
                 cout << "Trabajando en video " << id << endl;
                 string video_id = to_string(id);
 		string shots_img = work_path + "shots" + video_id + "/";
-                string f_data = work_path + "features" + video_id + "_s5.bin";
-                string bbox_data = work_path + "test_s5_" + video_id + ".txt";
+                string f_data = work_path + "features_vgg2_" + video_id + ".bin";
+                string bbox_data = work_path + "bbox_vgg_" + video_id + ".txt";
                 vector <int> r = get_similar(mat_consultas, f_data, bbox_data);
                 vector <int> shots_id = get_shot_id(bbox_data);
 		int len_shots_id = shots_id.size();
@@ -396,14 +415,14 @@ void save_videos_roi(string path_shots,string  bbox_file, string path_out){
 int main(int argc, char* argv[]){
 
 	/*	
-	for(int i = 1; i < 2; i += 1){
-		string shots_data = "/home/sormeno/data/ndata/shots"+to_string(i)+"/";
-		string bbox_data = "/home/sormeno/data/ndata/test_s5_"+to_string(i)+".txt";
-		string out_p = "/home/sormeno/data/ndata/features"+to_string(i)+"_s5.bin";
+	for(int i = 1; i < 5; i += 1){
+		string shots_data = "/home/sormeno/data/ndata/shots1/";
+		string bbox_data = "/home/sormeno/data/ndata/bbox_t" + to_string(i) + "_1.txt";
+		string out_p = "/home/sormeno/data/ndata/features_t" + to_string(i) + "_1.bin";
 		get_features(shots_data, bbox_data, out_p);
 	}
 	*/
-	///*
+	/*
         if (argc != 6){
                 cout << "Llamar funcion con nombre de imagen , su identificador y carpeta de trabajo" << endl;
                 return 1;
@@ -414,12 +433,11 @@ int main(int argc, char* argv[]){
         int c_id = stoi(argv[4]);
         string path = argv[5];
         eval_map(im_folder, im_name ,num_images, c_id, path, 1);
-        //*/
-
+        */
         //evaluacion(1);
         //string im_name = argv[1];
         //get_top_100_roi(im_name);
-
+	test_pca();
 	return 0;
 }
 
