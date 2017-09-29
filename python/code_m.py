@@ -7,6 +7,7 @@ import os
 import numpy as np
 import math
 from PIL import Image
+import caffe
 
 #obtiene todos los frames de un video
 def list_frames(video_name, fps, folder, min_limit = -1):
@@ -90,12 +91,23 @@ def shot_detection(path_images, n_images, out_shots):
     return shot_contador
 
 #calcula los bbox
-def save_bbox(path,inicio,fin, out):
+def save_bbox(path,inicio,fin, path_prototxt, path_caffemodel, out, mode="cpu"):
     images = []
     for i in range(inicio, fin):
         im_name = path + str(i) + ".jpg"
         images.append(im_name)
-    result = get_all_bbox(images,"gpu")
+
+    if not os.path.isfile(path_caffemodel):
+        raise IOError(('{:s} not found').format(path_caffemodel))
+    if (mode=="gpu"):
+        caffe.set_mode_gpu()
+    else:
+        caffe.set_mode_cpu()
+
+    net = caffe.Net(path_prototxt, path_caffemodel, caffe.TEST)
+    print '\n\nLoaded network {:s}'.format(path_caffemodel)
+
+    result = get_all_bbox(images,net)
     np.save(out + "data_names", images)
     np.save(out + "data_bbox", result)
 
@@ -287,32 +299,3 @@ def test_dist(feature):
         print result[i][1]
         to_show.append(cv2.imread(result[i][1]))
     make_grid(to_show, size, size)
-
-#video_name = "/home/sebastian/py-faster-rcnn/tools/videos/1/5339374493641274357.mp4"
-#list_frames(video_name, 2, "frames2/")
-#path = "/home/sebastian/Escritorio/universidad/memoria/codigo/python/frames2/img_out_"
-#n_shots = shot_detection(path, 14920, "shots/")
-
-##save_bbox("videos/2/shots/", 1850, 1851, "prueba_rois/")
-##save_bbox_images("prueba_rois/data_names.npy", "prueba_rois/data_bbox.npy", "prueba_rois/", 0)
-
-save_bbox("/home/sormeno/Desktop/videos/1/shots/", 0, 5924, "/home/sormeno/Desktop/videos/1/")
-#save_bbox("/home/sormeno/Desktop/videos/2/shots/", 0, 6111, "/home/sormeno/Desktop/videos/2/")
-#save_bbox("/home/sormeno/Desktop/videos/3/shots/", 0, 6333, "/home/sormeno/Desktop/videos/3/")
-#save_bbox("/home/sormeno/Desktop/videos/4/shots/", 0, 9057, "/home/sormeno/Desktop/videos/4/")
-
-#lista = [0, 13296, 1941, 338, 4747, 13484, 586, 11711, 18310, 18695, 9329, 13583, 18241, 1 5548, 517, 18599, 18200, 38, 16883, 191, 14803, 8115, 1967, 18750, 17173]
-#lista_f = []
-#for element in lista:
-#    a = cv2.imread("all_rois_im/r_"+str(element)+".jpg")
-#    lista_f.append(a)
-#make_grid(lista_f,4,4)
-
-#normalize_des()
-#feature = np.load("consultas/c6.npy")
-#evaluate_distance(feature, 0)
-#feature = np.load("consultas/c11_caffe.npy")
-#evaluate_distance(feature, 1)
-#compare_roi(feature, 0)
-
-#test_dist(feature)

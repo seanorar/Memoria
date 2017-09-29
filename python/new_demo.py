@@ -89,34 +89,12 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-def get_all_bbox(imgs_names, mode = "gpu"):
+
+def get_all_bbox(imgs_names, net):
 
     cfg.TEST.HAS_RPN = True  # Use RPN for proposals
 
     args = parse_args()
-
-    prototxt = os.path.join(cfg.MODELS_DIR, NETS[args.demo_net][0],
-                            'faster_rcnn_alt_opt', 'faster_rcnn_test.pt')
-    caffemodel = os.path.join(cfg.DATA_DIR, 'faster_rcnn_models',
-                              NETS[args.demo_net][1])
-
-    if not os.path.isfile(caffemodel):
-        raise IOError(('{:s} not found.\nDid you run ./data/script/'
-                       'fetch_faster_rcnn_models.sh?').format(caffemodel))
-    if (mode=="gpu"):
-        caffe.set_mode_gpu()
-    else:
-        caffe.set_mode_cpu()
-
-
-    net = caffe.Net(prototxt, caffemodel, caffe.TEST)
-
-    #test extract feature
-    #layer = 'fc7'
-    #if layer not in net.blobs:
-    #    raise TypeError("Invalid layer name: " + layer)
-    #
-    print '\n\nLoaded network {:s}'.format(caffemodel)
 
     # Warmup on a dummy image
     im = 128 * np.ones((300, 500, 3), dtype=np.uint8)
