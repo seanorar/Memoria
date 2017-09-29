@@ -179,7 +179,7 @@ def get_features_from_list(imgs_list_names):
     for im_name in imgs_list_names:
         im = cv2.imread(im_name)
         if im !=None:
-            if (len(im)>39 and len(im[0])>39):
+            if (len(im) > 39 and len(im[0]) > 39):
                 print im_name
                 im_detect(net, im)
                 feature = feature_detect(net, im)
