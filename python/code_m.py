@@ -90,26 +90,40 @@ def shot_detection(path_images, n_images, out_shots):
         lbpi = lbpf
     return shot_contador
 
+def init_net(prototxt, caffemodel, mode="cpu"):
+    if (mode=="gpu"):
+        caffe.set_mode_gpu()
+    else:
+        caffe.set_mode_cpu()
+
+    net = caffe.Net(prototxt, caffemodel, caffe.TEST)
+    print '\n\nLoaded network {:s}'.format(caffemodel)
+    return net
+
+
 #calcula los bbox
 def save_bbox(path,inicio,fin, path_prototxt, path_caffemodel, out, mode="cpu"):
     images = []
     for i in range(inicio, fin):
         im_name = path + str(i) + ".jpg"
         images.append(im_name)
-
-    if not os.path.isfile(path_caffemodel):
-        raise IOError(('{:s} not found').format(path_caffemodel))
-    if (mode=="gpu"):
-        caffe.set_mode_gpu()
-    else:
-        caffe.set_mode_cpu()
-
-    net = caffe.Net(path_prototxt, path_caffemodel, caffe.TEST)
-    print '\n\nLoaded network {:s}'.format(path_caffemodel)
-
+    net = init_net(path_prototxt, path_caffemodel, mode)
     result = get_all_bbox(images,net)
     np.save(out + "data_names", images)
     np.save(out + "data_bbox", result)
+
+
+def get_img_roi(img_path, prototxt, caffemodel,mode ="cpu"):
+    img = cv2.imread(img_path)
+    net = init_net(prototxt, caffemodel, mode)
+    bboxs = get_all_bbox([img_path], net)[0]
+    rois = []
+    for bbox in bboxs:
+        roi = img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
+        rois.append(roi)
+    num_rois = len(rois)
+    num_rows = int(math.ceil(num_rois/4))
+    make_grid(rois, 5, num_rows)
 
 
 def test_f():
@@ -255,21 +269,17 @@ def compare_roi(img_test, data):
         #cv2.imwrite("prueba_rois/r_"+str(k)+".jpg", im_aux2[aux_bbox[0]:aux_bbox[2],aux_bbox[1]:aux_bbox[3]])
 
 def make_grid(img_list,size_x, size_y):
-    new_im = Image.new('RGB', (300 * size_x, 300 * size_y))
+    new_im = Image.new('RGB', (200 * size_x, 200 * size_y))
     index = 0
-    for i in xrange(0, 300 * size_x, 300):
-        for j in xrange(0, 300 * size_y, 300):
+    for j in xrange(0, 200 * size_x, 200):
+        for i in xrange(0, 200 * size_y, 200):
             if(index < len(img_list)):
                 cv2.imwrite("aux.jpg",img_list[index])
                 im = Image.open("aux.jpg")
-                im.thumbnail((300, 300))
+                im.thumbnail((200, 200))
                 new_im.paste(im, (j, i))
                 index += 1
     new_im.save("resultado.jpg")
-    #new_im = cv2.imread("resultado.jpg")
-    #cv2.imshow("resultado", new_im)
-    #cv2.waitKey(0)
-    #cv2.destroyAllWindows()
 
 def normalize_des():
     for i in range(0, 17000):
