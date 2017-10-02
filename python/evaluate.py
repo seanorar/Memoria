@@ -1,6 +1,7 @@
 import cv2
 import numpy
 import xml.etree.ElementTree as ET
+from code_m import get_img_bbox
 
 def bb_intersection_over_union(bbox1, bbox2):
     xA = max(bbox1[0], bbox2[0])
@@ -43,5 +44,14 @@ def evaluate_iou(bboxs_gt, bboxs_predicted):
     return float(avg_iou / len(bboxs_gt))
 
 
+def get_dataset_ioi(txt_data, path_imgs, path_xmls, prototxt, caffemodel):
+    with open(txt_data) as f:
+        lines = f.readlines()
+        for line in lines:
+            path_img = path_imgs + line.split(" ")[0] + ".JPEG"
+            path_xml = path_xmls + line.split(" ")[0] + ".xml"
+            bboxs_gt = get_bbox_from_xml(path_xml)
+            bboxs_predicted = get_img_bbox(path_img, prototxt, caffemodel)
+            iou = evaluate_iou(bboxs_gt, bboxs_predicted)
+            print iou
 
-get_bbox_from_xml("/home/sebastian/Escritorio/ILSVRC2012_val_00000001.xml")

@@ -2,7 +2,7 @@ from Tkinter import *
 import Tkinter as tk
 from PIL import ImageTk, Image
 from tkFileDialog import askopenfilename
-from code_m import get_img_roi
+from code_m import vis_img_bbox
 
 proto_val = "prototxt"
 model_val = "caffemodel"
@@ -35,7 +35,7 @@ def create_img_roi():
     global proto_val
     global model_val
     global img_val
-    get_img_roi(img_val,proto_val,model_val)
+    vis_img_bbox(img_val,proto_val,model_val)
     img = ImageTk.PhotoImage(Image.open("resultado.jpg"))
     window = tk.Toplevel()
     canvas = Canvas(window, width=900, height=500)

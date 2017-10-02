@@ -112,11 +112,14 @@ def save_bbox(path,inicio,fin, path_prototxt, path_caffemodel, out, mode="cpu"):
     np.save(out + "data_names", images)
     np.save(out + "data_bbox", result)
 
-
-def get_img_roi(img_path, prototxt, caffemodel,mode ="cpu"):
-    img = cv2.imread(img_path)
+def get_img_bbox(img_path, prototxt, caffemodel,mode ="cpu"):
     net = init_net(prototxt, caffemodel, mode)
     bboxs = get_all_bbox([img_path], net)[0]
+    return bboxs
+
+def vis_img_bbox(img_path, prototxt, caffemodel,mode ="cpu"):
+    img = cv2.imread(img_path)
+    bboxs = get_img_bbox(img_path, prototxt, caffemodel,mode)
     rois = []
     for bbox in bboxs:
         roi = img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]

@@ -2,6 +2,7 @@ import glob
 #import requests
 from pathlib import Path
 from img_processing import zero_padding
+from evaluate import *
 import cv2
 
 def get_files_to_txt(path, path_out):
@@ -131,9 +132,9 @@ def padding_xml_to_dataset(xml_dir_path, txt_path, output):
                 
 
 def check_files(path_txt, path_folder):
-	with open(path_txt) as f:
-        	lines = f.readlines()
-		for line in lines:
+    with open(path_txt) as f:
+        lines = f.readlines()
+        for line in lines:
 			file_name = line.split(" ")[0]
 			#print path_folder +"ILSVRC2013_DET_bbox_trai/" + file_name + ".xml"
 			file_xml = Path(path_folder +"ILSVRC2013_DET_bbox_trai/" + file_name + ".xml")
@@ -149,3 +150,4 @@ def get_urls_imgs():
             url_img = "http://www-nlpir.nist.gov/projects/tv2013/pastdata/instance.search.topics/tv13.example.images/" + line
             print(url_img)
             get_img_from_url(url_img)
+
