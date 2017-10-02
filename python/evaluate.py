@@ -1,7 +1,7 @@
 import cv2
 import numpy
 import xml.etree.ElementTree as ET
-from code_m import get_img_bbox
+from code_m import get_img_bbox, get_dataset_bbox
 
 def bb_intersection_over_union(bbox1, bbox2):
     xA = max(bbox1[0], bbox2[0])
@@ -50,19 +50,41 @@ def get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode =
         avg_iou = 0
         num_lines = 0
         for line in lines:
-            num_lines += 1
             path_img = path_imgs + line.split(" ")[0] + ".JPEG"
             path_xml = path_xmls + line.split(" ")[0] + ".xml"
             bboxs_gt = get_bbox_from_xml(path_xml)
-            bboxs_predicted = get_img_bbox(path_img, prototxt, caffemodel, mode)
-            iou = evaluate_iou(bboxs_gt, bboxs_predicted)
-            avg_iou += iou
+            if (len(bboxs_gt) > 0):
+                bboxs_predicted = get_img_bbox(path_img, prototxt, caffemodel, mode)
+                iou = evaluate_iou(bboxs_gt, bboxs_predicted)
+                avg_iou += iou
+                num_lines += 1
         print "dataset iou = " + str(float(avg_iou/num_lines))
 
-#txt_data = "/home/sormeno/Datasets/Imagenet/ILSVRC2014_devkit/data/det_lists/val.txt"
-#path_imgs = "/home/sormeno/Datasets/Imagenet/ILSVRC13/ILSVRC2013_DET_val/"
-#path_xmls = "/home/sormeno/Datasets/Imagenet/ILSVRC13/ILSVRC2013_DET_bbox_val/"
-#prototxt =  "/home/sormeno/py-faster-rcnn/models/pascal_voc/VGG16/faster_rcnn_end2end/test.prototxt"
-#caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_final.caffemodel" 
-#get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu")
+def get_dataset_iou2(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode = "cpu"):
+    with open(txt_data) as f:
+        list_imgs_paths = []
+        list_gt_bboxs = []
+        lines = f.readlines()
+        avg_iou = 0
+        for line in lines:
+            path_img = path_imgs + line.split(" ")[0] + ".JPEG"
+            path_xml = path_xmls + line.split(" ")[0] + ".xml"
+            bboxs_gt = get_bbox_from_xml(path_xml)
+            if (len(bboxs_gt) > 0):
+                list_imgs_paths.append(path_img)
+                list_gt_bboxs.append(bboxs_gt)
+        bboxs_predicted = get_dataset_bbox(list_imgs_paths, prototxt, caffemodel, mode)
+        for i in range(0, len(list_gt_bboxs)):    
+            iou = evaluate_iou(list_gt_bboxs[i], bboxs_predicted[i])
+            avg_iou += iou
+
+        print "dataset iou = " + str(float(avg_iou/len(list_gt_bboxs)))
+
+
+txt_data = "/home/sormeno/Datasets/Imagenet/ILSVRC13/data/det_lists/val.txt"
+path_imgs = "/home/sormeno/Datasets/Imagenet/ILSVRC13/ILSVRC2013_DET_val/"
+path_xmls = "/home/sormeno/Datasets/Imagenet/ILSVRC13/ILSVRC2013_DET_bbox_val/"
+prototxt =  "/home/sormeno/py-faster-rcnn/models/pascal_voc/VGG16/faster_rcnn_end2end/test.prototxt"
+caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_final.caffemodel" 
+get_dataset_iou2(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu")
 
