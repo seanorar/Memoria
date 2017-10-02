@@ -120,6 +120,10 @@ def get_dataset_bbox(img_path_list, prototxt, caffemodel, mode = "cpu"):
 def get_img_bbox(img_path, prototxt, caffemodel,mode ="cpu"):
     return get_dataset_bbox([img_path], prototxt, caffemodel, mode)[0]
 
+def get_img_bbox2(img_path, net):
+    bboxs = get_all_bbox([img_path], net)[0]
+    return bboxs
+
 def vis_img_bbox(img_path, prototxt, caffemodel,mode ="cpu"):
     img = cv2.imread(img_path)
     bboxs = get_img_bbox(img_path, prototxt, caffemodel,mode)
