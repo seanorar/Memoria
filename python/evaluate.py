@@ -1,7 +1,17 @@
 import cv2
-import numpy
+import numpy as np
 import xml.etree.ElementTree as ET
 from code_m import get_img_bbox, get_dataset_bbox, get_img_bbox2, init_net
+from fast_rcnn.nms_wrapper import nms
+
+def apply_nms(bbox_list, nms_thresh):
+    fake_scores = []
+    for i in range(0,len(bbox_list)):
+        fake_scores.append(1.0 - (0.01*i))
+
+    keep = nms(np.hstack((bbox_list, fake_scores)), nms_thresh)
+    result_bbox = bbox_list[keep, :]
+    return result_bbox
 
 def bb_intersection_over_union(bbox1, bbox2):
     xA = max(bbox1[0], bbox2[0])
@@ -65,7 +75,6 @@ def get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode =
                 print iou
                 num_lines += 1
         print "dataset iou = " + str(float(avg_iou/num_lines))
-
 
 
 txt_data = "/home/sormeno/Datasets/Imagenet/ILSVRC13/data/det_lists/val.txt"
