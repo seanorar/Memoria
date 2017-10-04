@@ -7,7 +7,7 @@ from fast_rcnn.nms_wrapper import nms
 def apply_nms(bbox_list, nms_thresh):
     fake_scores = []
     for i in range(0,len(bbox_list)):
-        fake_scores.append(1.0 - (0.01*i))
+        fake_scores.append(np.array([1.0 - (0.001*i)], dtype='f'))
 
     keep = nms(np.hstack((bbox_list, fake_scores)), nms_thresh)
     result_bbox = bbox_list[keep, :]
@@ -70,6 +70,9 @@ def get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode =
             bboxs_gt = get_bbox_from_xml(path_xml)
             if (len(bboxs_gt) > 0):
                 bboxs_predicted = get_img_bbox2(path_img, net)
+                print len(bboxs_predicted)
+		filtered_bboxs = apply_nms(bboxs_predicted, 0.4)
+		print len(filtered_bboxs)
                 iou = evaluate_iou(bboxs_gt, bboxs_predicted)
                 avg_iou += iou
                 print iou
