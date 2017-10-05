@@ -47,25 +47,29 @@ def get_bbox_from_xml(xml_path):
 
 
 def evaluate_iou(bboxs_gt, bboxs_predicted):
-    avg_iou = 0
-    n_relevants = 0
+    avg_iou = 0.0
+    n_relevants = 0.0
+    gt_finded = 0.0
     for bbox_gt in bboxs_gt:
         max_iou = 0
         for bbox_predicted in  bboxs_predicted:
             iou = bb_intersection_over_union(bbox_gt, bbox_predicted)
             if (iou >= 0.5):
-                n_relevants += 1
+                n_relevants += 1.0
             if (max_iou < iou):
                 max_iou = iou
+        if (n_relevants > 0):
+            gt_finded += 1
         avg_iou = avg_iou + max_iou
-    return (float(avg_iou / len(bboxs_gt)), n_relevants)
+    return (float(avg_iou / len(bboxs_gt)), n_relevants, gt_finded)
 
 
 def get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode = "cpu"):
     with open(txt_data) as f:
         lines = f.readlines()
-        avg_iou = 0
-        avg_precision = 0
+        avg_iou = 0.0
+        avg_precision = 0.0
+        avg_recall = 0.0
         num_lines = 0
         net = init_net(prototxt, caffemodel, mode)
         for line in lines:
@@ -75,15 +79,19 @@ def get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode =
             if (len(bboxs_gt) > 0):
                 bboxs_predicted = get_img_bbox2(path_img, net)
                 filtered_bboxs = apply_nms(bboxs_predicted, 0.5)
-                iou, n_relevant= evaluate_iou(bboxs_gt, filtered_bboxs)
-                precision = float(n_relevant/len(filtered_bboxs))
-                print "max iou = " + str(iou)
-                print "precision = " + str(precision)
+                iou, n_relevant, gt_finded = evaluate_iou(bboxs_gt, filtered_bboxs)
+                precision = float(n_relevant / len(filtered_bboxs))
+		recall = float(gt_finded / len(bboxs_gt))
+                #print "max iou = " + str(iou)
+                #print "precision = " + str(precision)
+                print "recall = " + str (recall)
                 num_lines += 1
                 avg_iou += iou
                 avg_precision += precision
+                avg_recall += recall 
         print "dataset iou = " + str(float(avg_iou / num_lines))
         print "dataset map = " + str(float(avg_precision / num_lines))
+        print "dataset recall = " + str(float(avg_recall / num_lines))
 
 txt_data = "/home/sormeno/Datasets/Imagenet/ILSVRC13/data/det_lists/val.txt"
 path_imgs = "/home/sormeno/Datasets/Imagenet/ILSVRC13/ILSVRC2013_DET_val/"
