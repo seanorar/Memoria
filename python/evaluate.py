@@ -74,7 +74,7 @@ def get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, nms_io
         net = init_net(prototxt, caffemodel, mode)
         for line in lines:
             line = line.rstrip()
-            path_img = path_imgs + line.split(" ")[0] + ".JPEG"
+            path_img = path_imgs + line.split(" ")[0] + ".jpg"
             path_xml = path_xmls + line.split(" ")[0] + ".xml"
             bboxs_gt = get_bbox_from_xml(path_xml)
             if (len(bboxs_gt) > 0):
@@ -82,9 +82,10 @@ def get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, nms_io
                 filtered_bboxs = apply_nms(bboxs_predicted, nms_iou)
                 iou, n_relevant, gt_finded = evaluate_iou(bboxs_gt, filtered_bboxs)
                 precision = float(n_relevant / len(filtered_bboxs))
-		recall = float(gt_finded / len(bboxs_gt))
+                recall = float(gt_finded / len(bboxs_gt))
                 #print "max iou = " + str(iou)
                 #print "precision = " + str(precision)
+                print str(gt_finded)+ " / " + str(len(bboxs_gt))
                 print "recall = " + str (recall)
                 num_lines += 1
                 avg_iou += iou
@@ -93,6 +94,25 @@ def get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, nms_io
         print "dataset iou = " + str(float(avg_iou / num_lines))
         print "dataset map = " + str(float(avg_precision / num_lines))
         print "dataset recall = " + str(float(avg_recall / num_lines))
+        return (float(avg_iou / num_lines),float(avg_precision / num_lines),float(avg_recall / num_lines))
+
+
+def data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode="cpu"):
+    r_iou = []
+    r_presicion = []
+    r_recall = []
+    for i in range(0.05, 1 , 0.05):
+        r = get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, i, mode)
+        r_iou.append(r[0])
+        r_presicion.append(r[1])
+        r_recall.append(r[2])
+    print r_iou
+    print "________________"
+    print r_presicion
+    print "________________"
+    print r_recall
+
+
 
 #txt_data = "/home/sormeno/Datasets/Imagenet/ILSVRC13/data/det_lists/val.txt"
 #path_imgs = "/home/sormeno/Datasets/Imagenet/ILSVRC13/ILSVRC2013_DET_val/"
@@ -104,5 +124,5 @@ path_xmls = "/home/sormeno/Datasets/Pascal/xmls/"
 
 prototxt =  "/home/sormeno/py-faster-rcnn/models/pascal_voc/VGG16/faster_rcnn_end2end/test.prototxt"
 caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_final.caffemodel" 
-get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu")
+data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu")
 
