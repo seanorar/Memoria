@@ -64,7 +64,7 @@ def evaluate_iou(bboxs_gt, bboxs_predicted):
     return (float(avg_iou / len(bboxs_gt)), n_relevants, gt_finded)
 
 
-def get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode = "cpu"):
+def get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, nms_iou=0.5, mode="cpu"):
     with open(txt_data) as f:
         lines = f.readlines()
         avg_iou = 0.0
@@ -78,7 +78,7 @@ def get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode =
             bboxs_gt = get_bbox_from_xml(path_xml)
             if (len(bboxs_gt) > 0):
                 bboxs_predicted = get_img_bbox2(path_img, net)
-                filtered_bboxs = apply_nms(bboxs_predicted, 0.5)
+                filtered_bboxs = apply_nms(bboxs_predicted, nms_iou)
                 iou, n_relevant, gt_finded = evaluate_iou(bboxs_gt, filtered_bboxs)
                 precision = float(n_relevant / len(filtered_bboxs))
 		recall = float(gt_finded / len(bboxs_gt))
@@ -93,9 +93,14 @@ def get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode =
         print "dataset map = " + str(float(avg_precision / num_lines))
         print "dataset recall = " + str(float(avg_recall / num_lines))
 
-txt_data = "/home/sormeno/Datasets/Imagenet/ILSVRC13/data/det_lists/val.txt"
-path_imgs = "/home/sormeno/Datasets/Imagenet/ILSVRC13/ILSVRC2013_DET_val/"
-path_xmls = "/home/sormeno/Datasets/Imagenet/ILSVRC13/ILSVRC2013_DET_bbox_val/"
+#txt_data = "/home/sormeno/Datasets/Imagenet/ILSVRC13/data/det_lists/val.txt"
+#path_imgs = "/home/sormeno/Datasets/Imagenet/ILSVRC13/ILSVRC2013_DET_val/"
+#path_xmls = "/home/sormeno/Datasets/Imagenet/ILSVRC13/ILSVRC2013_DET_bbox_val/"
+
+txt_data = "/home/sormeno/Datasets/Pascal/val.txt"
+path_imgs = "/home/sormeno/Datasets/Pascal/Images/"
+path_xmls = "/home/sormeno/Datasets/Pascal/xmls/"
+
 prototxt =  "/home/sormeno/py-faster-rcnn/models/pascal_voc/VGG16/faster_rcnn_end2end/test.prototxt"
 caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_final.caffemodel" 
 get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu")
