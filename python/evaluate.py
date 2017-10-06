@@ -3,6 +3,7 @@ import numpy as np
 import xml.etree.ElementTree as ET
 from code_m import get_img_bbox, get_dataset_bbox, get_img_bbox2, init_net
 from fast_rcnn.nms_wrapper import nms
+import matplotlib.pyplot as plt
 
 def apply_nms(bbox_list, nms_thresh):
     fake_scores = []
@@ -112,17 +113,37 @@ def data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode="c
     print "________________"
     print r_recall
 
+def to_plot():
+    r_iou = [0.44584649527506504, 0.5062535687118969, 0.5342011713109763, 0.5532779513454696, 0.5690704146371486, 0.5838816962721233, 0.598112450293735, 0.6119567583581103, 0.6259686894492862, 0.6397117606770278, 0.6559784835854291, 0.6708644089387157, 0.6884734388748447, 0.7091674284905564, 0.749944744786584, 0.7509030749337933, 0.7509030749337933, 0.7509030749337933, 0.7509030749337933, 0.7509030749337933, 0.7509030749337933]
+    r_presicion = [0.27912128143837894, 0.1576551129848432, 0.13440007231696488, 0.11668162937366347, 0.10163280880613884, 0.0889425862375645, 0.07977745336089577, 0.07446203093336243, 0.0720217676800067, 0.07375549934508299, 0.07758539567458296, 0.0830987734610237, 0.08955421848038438, 0.10010830165600668, 0.12440397421323002, 0.12492992890257856, 0.12492992890257856, 0.12492992890257856, 0.12492992890257856, 0.12492992890257856, 0.12492992890257856]
+    r_recall = [0.6675047257722235, 0.7304993383984629, 0.7654896926297471, 0.7965042258040684, 0.8318227465598921, 0.8747422384753438, 0.9162677577373299, 0.9466677801628421, 0.9700637983480157, 0.9840750082912066, 0.9906483323571336, 0.9925456660733788, 0.99410473916508, 0.9948819852676105, 0.9956407834770172, 0.9956906737184861, 0.9956906737184861, 0.9956906737184861, 0.9956906737184861, 0.9956906737184861, 0.9956906737184861]
 
+
+    list_touple=[]
+    for i in range(0, len(r_presicion)):
+        list_touple.append((r_presicion[i], r_recall[i]))
+
+    sorted_by_second = sorted(list_touple, key=lambda tup: tup[1])
+    n_p = []
+    n_r = []
+    for i in range(0, len(r_presicion)):
+        n_p.append(sorted_by_second[i][0])
+        n_r.append(sorted_by_second[i][1])
+
+    plt.plot(n_r, n_p)
+    plt.ylabel('precision')
+    plt.xlabel('recall')
+    plt.show()
 
 #txt_data = "/home/sormeno/Datasets/Imagenet/ILSVRC13/data/det_lists/val.txt"
 #path_imgs = "/home/sormeno/Datasets/Imagenet/ILSVRC13/ILSVRC2013_DET_val/"
 #path_xmls = "/home/sormeno/Datasets/Imagenet/ILSVRC13/ILSVRC2013_DET_bbox_val/"
 
-txt_data = "/home/sormeno/Datasets/Pascal/val.txt"
-path_imgs = "/home/sormeno/Datasets/Pascal/Images/"
-path_xmls = "/home/sormeno/Datasets/Pascal/xmls/"
+#txt_data = "/home/sormeno/Datasets/Pascal/val.txt"
+#path_imgs = "/home/sormeno/Datasets/Pascal/Images/"
+#path_xmls = "/home/sormeno/Datasets/Pascal/xmls/"
 
-prototxt =  "/home/sormeno/py-faster-rcnn/models/pascal_voc/VGG16/faster_rcnn_end2end/test.prototxt"
-caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_final.caffemodel" 
-data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu")
+#prototxt =  "/home/sormeno/py-faster-rcnn/models/pascal_voc/VGG16/faster_rcnn_end2end/test.prototxt"
+#caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_final.caffemodel"
+#data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu")
 
