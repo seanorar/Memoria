@@ -73,6 +73,7 @@ def get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, nms_io
         num_lines = 0
         net = init_net(prototxt, caffemodel, mode)
         for line in lines:
+            line = line.rstrip()
             path_img = path_imgs + line.split(" ")[0] + ".JPEG"
             path_xml = path_xmls + line.split(" ")[0] + ".xml"
             bboxs_gt = get_bbox_from_xml(path_xml)
