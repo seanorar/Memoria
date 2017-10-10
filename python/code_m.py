@@ -278,11 +278,12 @@ def compare_roi(img_test, data):
         #cv2.rectangle(im_aux, (aux_bbox[0],aux_bbox[1]), (aux_bbox[2], aux_bbox[3]), (255, 0, 0), 4)
         #cv2.imwrite("prueba_rois/r_"+str(k)+".jpg", im_aux2[aux_bbox[0]:aux_bbox[2],aux_bbox[1]:aux_bbox[3]])
 
+#5, mucho
 def make_grid(img_list,size_x, size_y):
     new_im = Image.new('RGB', (200 * size_x, 200 * size_y))
     index = 0
-    for j in xrange(0, 200 * size_x, 200):
-        for i in xrange(0, 200 * size_y, 200):
+    for i in xrange(0, 200 * size_y, 200):
+        for j in xrange(0, 200 * size_x, 200):
             if(index < len(img_list)):
                 cv2.imwrite("aux.jpg",img_list[index])
                 im = Image.open("aux.jpg")
@@ -290,6 +291,7 @@ def make_grid(img_list,size_x, size_y):
                 new_im.paste(im, (j, i))
                 index += 1
     new_im.save("resultado.jpg")
+
 
 def normalize_des():
     for i in range(0, 17000):
