@@ -39,10 +39,10 @@ def get_bbox_from_xml(xml_path):
     gt_bbox = []
     for obj in root.iter('object'):
         for bbox in obj.iter("bndbox"):
-            xmin = int(bbox.find('xmin').text)
-            xmax = int(bbox.find('xmax').text)
-            ymin = int(bbox.find('ymin').text)
-            ymax = int(bbox.find('ymax').text)
+            xmin = int(bbox.find('xmin').text.split(".")[0])
+            xmax = int(bbox.find('xmax').text.split(".")[0])
+            ymin = int(bbox.find('ymin').text.split(".")[0])
+            ymax = int(bbox.find('ymax').text.split(".")[0])
             gt_bbox.append([xmin,ymin, xmax, ymax])
     return gt_bbox
 
@@ -102,14 +102,15 @@ def data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode="c
     r_iou = []
     r_presicion = []
     r_recall = []
-    for i in range(0.05, 1 , 0.05):
-        r = get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, i, mode)
+    for i in range(5, 100 , 5):
+        iou = float(i/100.0)
+        r = get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, iou, mode)
         r_iou.append(r[0])
         r_presicion.append(r[1])
         r_recall.append(r[2])
-    np.savez("iou_" + output, r_iou)
-    np.savez("presicion_" + output, r_presicion)
-    np.savez("recall_" + output, r_recall)
+    np.savez(output + "_iou", r_iou)
+    np.savez(output + "_presicion", r_presicion)
+    np.savez(output + "_recall", r_recall)
 
 def to_plot():
     r_iou = [0.44584649527506504, 0.5062535687118969, 0.5342011713109763, 0.5532779513454696, 0.5690704146371486, 0.5838816962721233, 0.598112450293735, 0.6119567583581103, 0.6259686894492862, 0.6397117606770278, 0.6559784835854291, 0.6708644089387157, 0.6884734388748447, 0.7091674284905564, 0.749944744786584, 0.7509030749337933, 0.7509030749337933, 0.7509030749337933, 0.7509030749337933, 0.7509030749337933, 0.7509030749337933]
@@ -133,7 +134,8 @@ def to_plot():
     plt.xlabel('recall')
     plt.show()
 
-#pascal
+
+#imagenet
 #-------------------------------------------------------------------------
 
 #txt_data = "/home/sormeno/Datasets/Imagenet/ILSVRC13/data/det_lists/val.txt"
@@ -143,15 +145,22 @@ def to_plot():
 #prototxt =  "/home/sormeno/py-faster-rcnn/models/imagenet/VGG16/faster_rcnn_end2end/test.prototxt"
 #caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_imagenet.caffemodel"
 
+#data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/pascal_1") 
 
-#imagenet
+
+#pascal
 #---------------------------------------------------------------------------
-#txt_data = "/home/sormeno/Datasets/Pascal/val.txt"
-#path_imgs = "/home/sormeno/Datasets/Pascal/Images/"
-#path_xmls = "/home/sormeno/Datasets/Pascal/xmls/"
+txt_data = "/home/sormeno/Datasets/Pascal/val.txt"
+path_imgs = "/home/sormeno/Datasets/Pascal/Images/"
+path_xmls = "/home/sormeno/Datasets/Pascal/xmls/"
 
-#prototxt =  "/home/sormeno/py-faster-rcnn/models/pascal_voc/VGG16/faster_rcnn_end2end/test.prototxt"
-#caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_final.caffemodel"
+prototxt =  "/home/sormeno/py-faster-rcnn/models/pascal_voc/VGG16/faster_rcnn_end2end/test.prototxt"
+caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_final.caffemodel"
 #----------------------------------------------------------------------------
+data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/pascal_1")
 
-#data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu")
+prototxt =  "/home/sormeno/py-faster-rcnn/models/imagenet/VGG16/faster_rcnn_end2end/test.prototxt"
+caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_imagenet.caffemodel"
+
+data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/imagenet_1")
+
