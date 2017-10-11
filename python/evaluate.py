@@ -46,24 +46,26 @@ def get_bbox_from_xml(xml_path):
             gt_bbox.append([xmin,ymin, xmax, ymax])
     return gt_bbox
 
-
-def evaluate_iou(bboxs_gt, bboxs_predicted):
+def evaluate_iou(bboxs_gt, bboxs_predicted, iou_relevant=0.5):
     avg_iou = 0.0
-    n_relevants = 0.0
-    gt_finded = 0.0
+    check_relevant = np.zeros(len(bboxs_predicted))
+    gt_finded_total = 0.0
     for bbox_gt in bboxs_gt:
         max_iou = 0
-        for bbox_predicted in  bboxs_predicted:
+        gt_finded = 0
+        for i in range(0, len(bboxs_predicted)):
+            bbox_predicted = bboxs_predicted[i]
             iou = bb_intersection_over_union(bbox_gt, bbox_predicted)
-            if (iou >= 0.5):
-                n_relevants += 1.0
+            if (iou >= iou_relevant):
+                check_relevant[i] = 1.0
+                gt_finded = 1
             if (max_iou < iou):
                 max_iou = iou
-        if (n_relevants > 0):
-            gt_finded += 1
+        if (gt_finded > 0):
+            gt_finded_total += 1
         avg_iou = avg_iou + max_iou
-    return (float(avg_iou / len(bboxs_gt)), n_relevants, gt_finded)
-
+    n_relevants = sum(check_relevant)
+    return (float(avg_iou / len(bboxs_gt)), n_relevants, gt_finded_total)
 
 def get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, nms_iou=0.5, mode="cpu"):
     with open(txt_data) as f:
