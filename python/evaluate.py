@@ -67,7 +67,7 @@ def evaluate_iou(bboxs_gt, bboxs_predicted, iou_relevant=0.5):
     n_relevants = sum(check_relevant)
     return (float(avg_iou / len(bboxs_gt)), n_relevants, gt_finded_total)
 
-def get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, nms_iou=0.5, mode="cpu"):
+def get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, nms_iou=0.5, iou_relevant=0.5, mode="cpu"):
     with open(txt_data) as f:
         lines = f.readlines()
         avg_iou = 0.0
@@ -83,7 +83,7 @@ def get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, nms_io
             if (len(bboxs_gt) > 0):
                 bboxs_predicted = get_img_bbox2(path_img, net)
                 filtered_bboxs = apply_nms(bboxs_predicted, nms_iou)
-                iou, n_relevant, gt_finded = evaluate_iou(bboxs_gt, filtered_bboxs)
+                iou, n_relevant, gt_finded = evaluate_iou(bboxs_gt, filtered_bboxs, iou_relevant)
                 precision = float(n_relevant / len(filtered_bboxs))
                 recall = float(gt_finded / len(bboxs_gt))
                 #print "max iou = " + str(iou)
@@ -106,7 +106,7 @@ def data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode="c
     r_recall = []
     for i in range(5, 100 , 5):
         iou = float(i/100.0)
-        r = get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, iou, mode)
+        r = get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, 0.6, iou, mode)
         r_iou.append(r[0])
         r_presicion.append(r[1])
         r_recall.append(r[2])
@@ -139,9 +139,6 @@ def to_plot(dataset):
     plt.show()
 
 def plot_both():
-    #r_iou = [0.44584649527506504, 0.5062535687118969, 0.5342011713109763, 0.5532779513454696, 0.5690704146371486, 0.5838816962721233, 0.598112450293735, 0.6119567583581103, 0.6259686894492862, 0.6397117606770278, 0.6559784835854291, 0.6708644089387157, 0.6884734388748447, 0.7091674284905564, 0.749944744786584, 0.7509030749337933, 0.7509030749337933, 0.7509030749337933, 0.7509030749337933, 0.7509030749337933, 0.7509030749337933]
-    #r_presicion = [0.27912128143837894, 0.1576551129848432, 0.13440007231696488, 0.11668162937366347, 0.10163280880613884, 0.0889425862375645, 0.07977745336089577, 0.07446203093336243, 0.0720217676800067, 0.07375549934508299, 0.07758539567458296, 0.0830987734610237, 0.08955421848038438, 0.10010830165600668, 0.12440397421323002, 0.12492992890257856, 0.12492992890257856, 0.12492992890257856, 0.12492992890257856, 0.12492992890257856, 0.12492992890257856]
-    #r_recall = [0.6675047257722235, 0.7304993383984629, 0.7654896926297471, 0.7965042258040684, 0.8318227465598921, 0.8747422384753438, 0.9162677577373299, 0.9466677801628421, 0.9700637983480157, 0.9840750082912066, 0.9906483323571336, 0.9925456660733788, 0.99410473916508, 0.9948819852676105, 0.9956407834770172, 0.9956906737184861, 0.9956906737184861, 0.9956906737184861, 0.9956906737184861, 0.9956906737184861, 0.9956906737184861]
     path = "/home/sebastian/Escritorio/universidad/memoria/py-faster-rcnn/tools/Memoria/calculados"
     dataset = "imagenet"
     r_iou = np.load(path+"/"+dataset+"_1_iou.npz")['arr_0']
