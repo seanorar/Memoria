@@ -99,6 +99,22 @@ def get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, nms_io
         print "dataset recall = " + str(float(avg_recall / num_lines))
         return (float(avg_iou / num_lines),float(avg_precision / num_lines),float(avg_recall / num_lines))
 
+def show_best_roi(img, gt, predicted):
+    best_rois = []
+    for bb_gt in gt:
+        max_iou = -1
+        best_roi = []
+        for bb_predicted in predicted:
+            iou = bb_intersection_over_union(bb_gt, bb_predicted)
+            if (iou > max_iou):
+                best_roi = bb_predicted
+        best_rois.append(best_roi)
+    for i in range(0, len(gt)):
+        aux_img = img
+        cv2.rectangle(aux_img, (best_roi[i][0], best_roi[i][1]), (best_roi[i][2], best_roi[i][3]), (0, 255, 0), 3)
+        cv2.imshow('image', aux_img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
 def data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode="cpu", output="out"):
     r_iou = []
@@ -114,66 +130,36 @@ def data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode="c
     np.savez(output + "_presicion", r_presicion)
     np.savez(output + "_recall", r_recall)
 
-def to_plot(dataset):
-    #r_iou = [0.44584649527506504, 0.5062535687118969, 0.5342011713109763, 0.5532779513454696, 0.5690704146371486, 0.5838816962721233, 0.598112450293735, 0.6119567583581103, 0.6259686894492862, 0.6397117606770278, 0.6559784835854291, 0.6708644089387157, 0.6884734388748447, 0.7091674284905564, 0.749944744786584, 0.7509030749337933, 0.7509030749337933, 0.7509030749337933, 0.7509030749337933, 0.7509030749337933, 0.7509030749337933]
-    #r_presicion = [0.27912128143837894, 0.1576551129848432, 0.13440007231696488, 0.11668162937366347, 0.10163280880613884, 0.0889425862375645, 0.07977745336089577, 0.07446203093336243, 0.0720217676800067, 0.07375549934508299, 0.07758539567458296, 0.0830987734610237, 0.08955421848038438, 0.10010830165600668, 0.12440397421323002, 0.12492992890257856, 0.12492992890257856, 0.12492992890257856, 0.12492992890257856, 0.12492992890257856, 0.12492992890257856]
-    #r_recall = [0.6675047257722235, 0.7304993383984629, 0.7654896926297471, 0.7965042258040684, 0.8318227465598921, 0.8747422384753438, 0.9162677577373299, 0.9466677801628421, 0.9700637983480157, 0.9840750082912066, 0.9906483323571336, 0.9925456660733788, 0.99410473916508, 0.9948819852676105, 0.9956407834770172, 0.9956906737184861, 0.9956906737184861, 0.9956906737184861, 0.9956906737184861, 0.9956906737184861, 0.9956906737184861]
-    path = "/home/sebastian/Escritorio/universidad/memoria/py-faster-rcnn/tools/Memoria/calculados"
-    r_iou = np.load(path+"/"+dataset+"_1_iou.npz")['arr_0']
-    r_presicion = np.load(path + "/"+dataset+"_1_precision.npz")['arr_0']
-    r_recall = np.load(path + "/"+dataset+"_1_recall.npz")['arr_0']
-    list_touple=[]
-    for i in range(0, len(r_presicion)):
-        list_touple.append((r_presicion[i], r_recall[i]))
-
-    sorted_by_second = sorted(list_touple, key=lambda tup: tup[1])
-    n_p = []
-    n_r = []
-    for i in range(0, len(r_presicion)):
-        n_p.append(sorted_by_second[i][0])
-        n_r.append(sorted_by_second[i][1])
-
-    plt.plot(n_r, n_p)
-    plt.ylabel('precision')
-    plt.xlabel('recall')
-    plt.show()
-
-def plot_both():
+def plot_presicion_vs_recall(id):
     path = "/home/sebastian/Escritorio/universidad/memoria/py-faster-rcnn/tools/Memoria/calculados"
     dataset = "imagenet"
-    r_iou = np.load(path+"/"+dataset+"_1_iou.npz")['arr_0']
-    r_presicion = np.load(path + "/"+dataset+"_1_precision.npz")['arr_0']
-    r_recall = np.load(path + "/"+dataset+"_1_recall.npz")['arr_0']
-    list_touple=[]
-    for i in range(0, len(r_presicion)):
-        list_touple.append((r_presicion[i], r_recall[i]))
-
-    sorted_by_second = sorted(list_touple, key=lambda tup: tup[1])
-    n_p_i = []
-    n_r_i = []
-    for i in range(0, len(r_presicion)):
-        n_p_i.append(sorted_by_second[i][0])
-        n_r_i.append(sorted_by_second[i][1])
-
+    i_iou, i_presicion, i_recall = load_data(path, dataset, id)
     dataset = "pascal"
-    r_iou = np.load(path+"/"+dataset+"_1_iou.npz")['arr_0']
-    r_presicion = np.load(path + "/"+dataset+"_1_precision.npz")['arr_0']
-    r_recall = np.load(path + "/"+dataset+"_1_recall.npz")['arr_0']
-    list_touple=[]
-    for i in range(0, len(r_presicion)):
-        list_touple.append((r_presicion[i], r_recall[i]))
+    p_iou, p_presicion, p_recall = load_data(path, dataset, id)
+    to_plot([i_recall, p_recall],[i_presicion, p_presicion],['imagenet', 'pascal'],'recall', 'presicion')
 
-    sorted_by_second = sorted(list_touple, key=lambda tup: tup[1])
-    n_p_p = []
-    n_r_p = []
-    for i in range(0, len(r_presicion)):
-        n_p_p.append(sorted_by_second[i][0])
-        n_r_p.append(sorted_by_second[i][1])
+def plot_data_vs_trsh(id):
+    path = "/home/sebastian/Escritorio/universidad/memoria/py-faster-rcnn/tools/Memoria/calculados"
+    dataset = "imagenet"
+    i_iou, i_presicion, i_recall = load_data(path, dataset, id)
+    dataset = "pascal"
+    p_iou, p_presicion, p_recall = load_data(path, dataset, id)
+    x_val = [i / 100.0 for i in range(5,100,5)]
 
-    plt.plot(n_r_i, n_p_i, label="imagenet")
-    plt.plot(n_r_p, n_p_p, label = "pascal" )
-    plt.ylabel('precision')
-    plt.xlabel('recall')
+    to_plot([x_val, x_val], [p_recall, i_recall], ['pascal', 'imagenet'], 'thr_iou', 'recall')
+    to_plot([x_val, x_val], [p_presicion, i_presicion], ['pascal', 'imagenet'], 'thr_iou', 'presicion')
+
+def load_data(path, dataset, id):
+    iou = np.load(path + "/" + dataset + "_"+str(id)+"_iou.npz")['arr_0']
+    presicion = np.load(path + "/" + dataset + "_"+str(id)+"_presicion.npz")['arr_0']
+    recall = np.load(path + "/" + dataset + "_"+str(id)+"_recall.npz")['arr_0']
+    return (iou, presicion, recall)
+
+def to_plot(data_x,data_y, labels, axis_x, axis_y):
+    for i in range(len(data_x)):
+        plt.plot(data_x[i], data_y[i], label=labels[i])
+    plt.ylabel(axis_y)
+    plt.xlabel(axis_x)
     plt.legend()
     plt.show()
 
@@ -206,4 +192,5 @@ def plot_both():
 
 #data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/imagenet_1")
 
-plot_both()
+plot_presicion_vs_recall(1)
+#plot_data_vs_trsh(2)
