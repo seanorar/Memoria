@@ -42,7 +42,7 @@ def get_bbox_from_txt(txt_path, img_id):
                 split_data =str_data.split(" ")
                 if (split_data[0] == img_id):
                     aux = [int(i) for i in split_data]
-                    result.append([aux[2],aux[3],aux[0] + aux[2], aux[1] + aux[3]])
+                    result.append([aux[3],aux[4],aux[1] + aux[3], aux[2] + aux[4]])
             return result
 
 def get_bbox_from_xml(xml_path):
@@ -104,8 +104,8 @@ def get_dataset_iou(txt_data, path_imgs, path_bbox_data, prototxt, caffemodel, n
                 iou, n_relevant, gt_finded = evaluate_iou(bboxs_gt, filtered_bboxs, iou_relevant)
                 precision = float(n_relevant / len(filtered_bboxs))
                 recall = float(gt_finded / len(bboxs_gt))
-                print "max iou = " + str(iou)
-                #print "precision = " + str(precision)
+                #print "max iou = " + str(iou)
+                print "precision = " + str(precision)
                 print str(gt_finded)+ " / " + str(len(bboxs_gt))
                 print "recall = " + str (recall)
                 num_lines += 1
@@ -140,9 +140,9 @@ def data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode="c
     r_iou = []
     r_presicion = []
     r_recall = []
-    for i in range(5, 100 , 10):
+    for i in range(5, 100 , 5):
         iou = float(i/100.0)
-        r = get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, 0.5, 0.5, mode)
+        r = get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, iou, 0.5, mode)
         r_iou.append(r[0])
         r_presicion.append(r[1])
         r_recall.append(r[2])
@@ -198,7 +198,7 @@ data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/ho
 
 #pascal
 #---------------------------------------------------------------------------
-#"""
+"""
 txt_data = "/home/sormeno/Datasets/Pascal/val.txt"
 path_imgs = "/home/sormeno/Datasets/Pascal/Images/"
 path_xmls = "/home/sormeno/Datasets/Pascal/xmls/"
@@ -213,10 +213,10 @@ prototxt =  "/home/sormeno/py-faster-rcnn/models/imagenet/VGG16/faster_rcnn_end2
 caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_imagenet.caffemodel"
 
 data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/imagenet_1")
-#"""
+"""
 #dataset
 #---------------------------------------------------------------------------
-"""
+#"""
 txt_data = "/home/sormeno/Desktop/videos/1/val.txt"
 path_imgs = "/home/sormeno/Desktop/videos/1/shots/"
 path_xmls = "/home/sormeno/Desktop/videos/1/bbox_data.txt"
@@ -231,7 +231,7 @@ prototxt =  "/home/sormeno/py-faster-rcnn/models/imagenet/VGG16/faster_rcnn_end2
 caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_imagenet.caffemodel"
 
 data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/mdata_imagenet_1")
-"""
+#"""
 #plot_presicion_vs_recall(1)
 #plot_data_vs_trsh(2)
 #print get_bbox_from_txt("/home/sebastian/Escritorio/universidad/memoria/py-faster-rcnn/tools/videos/1/bbox_detected.txt", 122)
