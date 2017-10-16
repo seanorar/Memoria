@@ -33,6 +33,18 @@ def bb_intersection_over_union(bbox1, bbox2):
             print "error" 
         return iou
 
+def get_bbox_from_txt(txt_path, img_id):
+        with open(txt_path) as f:
+            lines = f.readlines()
+            result = []
+            for line in lines:
+                str_data = line.strip()
+                split_data =str_data.split(" ")
+                if (split_data[0] == img_id):
+                    aux = [int(i) for i in split_data]
+                    result.append([aux[2],aux[3],aux[0] + aux[2], aux[1] + aux[3]])
+            return result
+
 def get_bbox_from_xml(xml_path):
     tree = ET.parse(xml_path)
     root = tree.getroot()
@@ -67,7 +79,7 @@ def evaluate_iou(bboxs_gt, bboxs_predicted, iou_relevant=0.5):
     n_relevants = sum(check_relevant)
     return (float(avg_iou / len(bboxs_gt)), n_relevants, gt_finded_total)
 
-def get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, nms_iou=0.5, iou_relevant=0.5, mode="cpu"):
+def get_dataset_iou(txt_data, path_imgs, path_bbox_data, prototxt, caffemodel, nms_iou=0.5, iou_relevant=0.5, mode="cpu"):
     with open(txt_data) as f:
         lines = f.readlines()
         avg_iou = 0.0
@@ -77,9 +89,13 @@ def get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, nms_io
         net = init_net(prototxt, caffemodel, mode)
         for line in lines:
             line = line.rstrip()
-            path_img = path_imgs + line.split(" ")[0] + ".jpg"
-            path_xml = path_xmls + line.split(" ")[0] + ".xml"
-            bboxs_gt = get_bbox_from_xml(path_xml)
+            img_id = line.split(" ")[0]
+            path_img = path_imgs + img_id + ".jpg"
+            if ".txt" in path_bbox_data:
+                bboxs_gt = get_bbox_from_txt(path_bbox_data, img_id)
+            else:
+                path_xml = path_bbox_data + img_id + ".xml"
+                bboxs_gt = get_bbox_from_xml(path_xml)
             if (len(bboxs_gt) > 0):
                 bboxs_predicted = get_img_bbox2(path_img, net)
                 filtered_bboxs = apply_nms(bboxs_predicted, nms_iou)
@@ -108,10 +124,12 @@ def show_best_roi(img, gt, predicted):
             iou = bb_intersection_over_union(bb_gt, bb_predicted)
             if (iou > max_iou):
                 best_roi = bb_predicted
+                max_iou = iou
         best_rois.append(best_roi)
     for i in range(0, len(gt)):
         aux_img = img
-        cv2.rectangle(aux_img, (best_roi[i][0], best_roi[i][1]), (best_roi[i][2], best_roi[i][3]), (0, 255, 0), 3)
+        cv2.rectangle(aux_img, (gt[i][0], gt[i][1]), (gt[i][2], gt[i][3]), (0, 0, 0), 3)
+        cv2.rectangle(aux_img, (best_rois[i][0], best_rois[i][1]), (best_rois[i][2], best_rois[i][3]), (0, 255, 0), 3)
         cv2.imshow('image', aux_img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
@@ -184,6 +202,7 @@ def to_plot(data_x,data_y, labels, axis_x, axis_y):
 
 #prototxt =  "/home/sormeno/py-faster-rcnn/models/pascal_voc/VGG16/faster_rcnn_end2end/test.prototxt"
 #caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_final.caffemodel"
+
 #----------------------------------------------------------------------------
 #data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/pascal_1")
 
@@ -192,5 +211,16 @@ def to_plot(data_x,data_y, labels, axis_x, axis_y):
 
 #data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/imagenet_1")
 
-plot_presicion_vs_recall(1)
+#plot_presicion_vs_recall(1)
 #plot_data_vs_trsh(2)
+print get_bbox_from_txt("/home/sebastian/Escritorio/universidad/memoria/py-faster-rcnn/tools/videos/1/bbox_detected.txt", 122)
+#prototxt = "/home/sebastian/Escritorio/data_app/test_pascal.prototxt"
+#caffemodel = "/home/sebastian/Escritorio/data_app/VGG16_faster_rcnn_final.caffemodel"
+#path_img = "/home/sebastian/Escritorio/ILSVRC2012_val_00000001.JPEG"
+#path_xml = "/home/sebastian/Escritorio/ILSVRC2012_val_00000001.xml"
+#gt = get_bbox_from_xml(path_xml)
+#net = init_net(prototxt, caffemodel, "cpu")
+#predicted = get_img_bbox2(path_img, net)
+#img = cv2.imread(path_img)
+#show_best_roi(img,gt, predicted)
+
