@@ -98,11 +98,13 @@ def get_dataset_iou(txt_data, path_imgs, path_bbox_data, prototxt, caffemodel, n
                 bboxs_gt = get_bbox_from_xml(path_xml)
             if (len(bboxs_gt) > 0):
                 bboxs_predicted = get_img_bbox2(path_img, net)
+                print "rois detectados: " + str(len(bboxs_predicted))
                 filtered_bboxs = apply_nms(bboxs_predicted, nms_iou)
+                print "rois despues del filtro: " + str(len(filtered_bboxs))
                 iou, n_relevant, gt_finded = evaluate_iou(bboxs_gt, filtered_bboxs, iou_relevant)
                 precision = float(n_relevant / len(filtered_bboxs))
                 recall = float(gt_finded / len(bboxs_gt))
-                #print "max iou = " + str(iou)
+                print "max iou = " + str(iou)
                 #print "precision = " + str(precision)
                 print str(gt_finded)+ " / " + str(len(bboxs_gt))
                 print "recall = " + str (recall)
@@ -138,9 +140,9 @@ def data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode="c
     r_iou = []
     r_presicion = []
     r_recall = []
-    for i in range(5, 100 , 5):
+    for i in range(5, 100 , 10):
         iou = float(i/100.0)
-        r = get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, 0.6, iou, mode)
+        r = get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, 0.5, 0.5, mode)
         r_iou.append(r[0])
         r_presicion.append(r[1])
         r_recall.append(r[2])
@@ -183,37 +185,56 @@ def to_plot(data_x,data_y, labels, axis_x, axis_y):
 
 #imagenet
 #-------------------------------------------------------------------------
+"""
+txt_data = "/home/sormeno/Datasets/Imagenet/ILSVRC13/data/det_lists/val.txt"
+path_imgs = "/home/sormeno/Datasets/Imagenet/ILSVRC13/ILSVRC2013_DET_val/"
+path_xmls = "/home/sormeno/Datasets/Imagenet/ILSVRC13/ILSVRC2013_DET_bbox_val/"
 
-#txt_data = "/home/sormeno/Datasets/Imagenet/ILSVRC13/data/det_lists/val.txt"
-#path_imgs = "/home/sormeno/Datasets/Imagenet/ILSVRC13/ILSVRC2013_DET_val/"
-#path_xmls = "/home/sormeno/Datasets/Imagenet/ILSVRC13/ILSVRC2013_DET_bbox_val/"
+prototxt =  "/home/sormeno/py-faster-rcnn/models/imagenet/VGG16/faster_rcnn_end2end/test.prototxt"
+caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_imagenet.caffemodel"
 
-#prototxt =  "/home/sormeno/py-faster-rcnn/models/imagenet/VGG16/faster_rcnn_end2end/test.prototxt"
-#caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_imagenet.caffemodel"
-
-#data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/pascal_1") 
-
+data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/pascal_1") 
+"""
 
 #pascal
 #---------------------------------------------------------------------------
-#txt_data = "/home/sormeno/Datasets/Pascal/val.txt"
-#path_imgs = "/home/sormeno/Datasets/Pascal/Images/"
-#path_xmls = "/home/sormeno/Datasets/Pascal/xmls/"
+#"""
+txt_data = "/home/sormeno/Datasets/Pascal/val.txt"
+path_imgs = "/home/sormeno/Datasets/Pascal/Images/"
+path_xmls = "/home/sormeno/Datasets/Pascal/xmls/"
 
-#prototxt =  "/home/sormeno/py-faster-rcnn/models/pascal_voc/VGG16/faster_rcnn_end2end/test.prototxt"
-#caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_final.caffemodel"
+prototxt =  "/home/sormeno/py-faster-rcnn/models/pascal_voc/VGG16/faster_rcnn_end2end/test.prototxt"
+caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_final.caffemodel"
 
 #----------------------------------------------------------------------------
-#data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/pascal_1")
+data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/pascal_1")
 
-#prototxt =  "/home/sormeno/py-faster-rcnn/models/imagenet/VGG16/faster_rcnn_end2end/test.prototxt"
-#caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_imagenet.caffemodel"
+prototxt =  "/home/sormeno/py-faster-rcnn/models/imagenet/VGG16/faster_rcnn_end2end/test.prototxt"
+caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_imagenet.caffemodel"
 
-#data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/imagenet_1")
+data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/imagenet_1")
+#"""
+#dataset
+#---------------------------------------------------------------------------
+"""
+txt_data = "/home/sormeno/Desktop/videos/1/val.txt"
+path_imgs = "/home/sormeno/Desktop/videos/1/shots/"
+path_xmls = "/home/sormeno/Desktop/videos/1/bbox_data.txt"
 
+prototxt = "/home/sormeno/py-faster-rcnn/models/pascal_voc/VGG16/faster_rcnn_end2end/test.prototxt"
+caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_final.caffemodel"
+
+#----------------------------------------------------------------------------
+data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/mdata_pascal_1")
+
+prototxt =  "/home/sormeno/py-faster-rcnn/models/imagenet/VGG16/faster_rcnn_end2end/test.prototxt"
+caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_imagenet.caffemodel"
+
+data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/mdata_imagenet_1")
+"""
 #plot_presicion_vs_recall(1)
 #plot_data_vs_trsh(2)
-print get_bbox_from_txt("/home/sebastian/Escritorio/universidad/memoria/py-faster-rcnn/tools/videos/1/bbox_detected.txt", 122)
+#print get_bbox_from_txt("/home/sebastian/Escritorio/universidad/memoria/py-faster-rcnn/tools/videos/1/bbox_detected.txt", 122)
 #prototxt = "/home/sebastian/Escritorio/data_app/test_pascal.prototxt"
 #caffemodel = "/home/sebastian/Escritorio/data_app/VGG16_faster_rcnn_final.caffemodel"
 #path_img = "/home/sebastian/Escritorio/ILSVRC2012_val_00000001.JPEG"
