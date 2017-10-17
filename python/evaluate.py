@@ -188,11 +188,14 @@ def to_plot(data_x,data_y, labels, axis_x, axis_y):
     plt.show()
 
 def create_mini_imagenet(path_val_imagenet):
-    with open(path_val_imagenet) as f:
+    with open(path_val_imagenet+"val.txt") as f:
         lines = f.readlines()
         shuffle(lines)
-        print lines[:10]
-
+        selected = lines[:5000]
+        f = open(path_val_imagenet + 'min_val.txt', 'w')
+        for line in selected:
+            f.write(line)
+        f.close()
 
 #imagenet
 #-------------------------------------------------------------------------
@@ -260,4 +263,4 @@ predicted = get_img_bbox2(path_img, net)
 img = cv2.imread(path_img)
 show_best_roi(img,gt, predicted)
 """
-create_mini_imagenet("/home/sormeno/Datasets/Imagenet/ILSVRC13/data/det_lists/val.txt")
+create_mini_imagenet("/home/sormeno/Datasets/Imagenet/ILSVRC13/data/det_lists/")
