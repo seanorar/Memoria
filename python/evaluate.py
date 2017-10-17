@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 from code_m import get_img_bbox, get_dataset_bbox, get_img_bbox2, init_net
 from fast_rcnn.nms_wrapper import nms
 import matplotlib.pyplot as plt
+from random import shuffle
 
 def apply_nms(bbox_list, nms_thresh):
     fake_scores = []
@@ -119,6 +120,7 @@ def get_dataset_iou(txt_data, path_imgs, path_bbox_data, prototxt, caffemodel, n
 
 def show_best_roi(img, gt, predicted):
     best_rois = []
+    iou_scores = []
     for bb_gt in gt:
         max_iou = -1
         best_roi = []
@@ -128,9 +130,11 @@ def show_best_roi(img, gt, predicted):
                 best_roi = bb_predicted
                 max_iou = iou
         best_rois.append(best_roi)
+        iou_scores.append(max_iou)
     for i in range(0, len(gt)):
-        aux_img = img
-        cv2.rectangle(aux_img, (gt[i][0], gt[i][1]), (gt[i][2], gt[i][3]), (0, 0, 0), 3)
+        print iou_scores[i]
+        aux_img = img.copy()
+        cv2.rectangle(aux_img, (gt[i][0], gt[i][1]), (gt[i][2], gt[i][3]), (255, 255, 255), 3)
         cv2.rectangle(aux_img, (best_rois[i][0], best_rois[i][1]), (best_rois[i][2], best_rois[i][3]), (0, 255, 0), 3)
         cv2.imshow('image', aux_img)
         cv2.waitKey(0)
@@ -150,29 +154,29 @@ def data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode="c
     np.savez(output + "_presicion", r_presicion)
     np.savez(output + "_recall", r_recall)
 
-def plot_presicion_vs_recall(id):
+def plot_presicion_vs_recall(dataset, id):
     path = "/home/sebastian/Escritorio/universidad/memoria/py-faster-rcnn/tools/Memoria/calculados"
-    dataset = "imagenet"
-    i_iou, i_presicion, i_recall = load_data(path, dataset, id)
-    dataset = "pascal"
-    p_iou, p_presicion, p_recall = load_data(path, dataset, id)
+    trained = "imagenet"
+    i_iou, i_presicion, i_recall = load_data(path, dataset, trained, id)
+    trained = "pascal"
+    p_iou, p_presicion, p_recall = load_data(path, dataset, trained, id)
     to_plot([i_recall, p_recall],[i_presicion, p_presicion],['imagenet', 'pascal'],'recall', 'presicion')
 
-def plot_data_vs_trsh(id):
+def plot_data_vs_trsh(dataset, id):
     path = "/home/sebastian/Escritorio/universidad/memoria/py-faster-rcnn/tools/Memoria/calculados"
-    dataset = "imagenet"
-    i_iou, i_presicion, i_recall = load_data(path, dataset, id)
-    dataset = "pascal"
-    p_iou, p_presicion, p_recall = load_data(path, dataset, id)
+    trained = "imagenet"
+    i_iou, i_presicion, i_recall = load_data(path, dataset, trained, id)
+    trained = "pascal"
+    p_iou, p_presicion, p_recall = load_data(path, dataset, trained, id)
     x_val = [i / 100.0 for i in range(5,100,5)]
 
     to_plot([x_val, x_val], [p_recall, i_recall], ['pascal', 'imagenet'], 'thr_iou', 'recall')
     to_plot([x_val, x_val], [p_presicion, i_presicion], ['pascal', 'imagenet'], 'thr_iou', 'presicion')
 
-def load_data(path, dataset, id):
-    iou = np.load(path + "/" + dataset + "_"+str(id)+"_iou.npz")['arr_0']
-    presicion = np.load(path + "/" + dataset + "_"+str(id)+"_presicion.npz")['arr_0']
-    recall = np.load(path + "/" + dataset + "_"+str(id)+"_recall.npz")['arr_0']
+def load_data(path, dataset, trained, id):
+    iou = np.load(path + "/" + dataset + "_" + trained +"_"+str(id)+"_iou.npz")['arr_0']
+    presicion = np.load(path + "/" + dataset + "_" + trained + "_"+str(id)+"_presicion.npz")['arr_0']
+    recall = np.load(path + "/" + dataset + "_" + trained + "_" + str(id)+"_recall.npz")['arr_0']
     return (iou, presicion, recall)
 
 def to_plot(data_x,data_y, labels, axis_x, axis_y):
@@ -182,6 +186,13 @@ def to_plot(data_x,data_y, labels, axis_x, axis_y):
     plt.xlabel(axis_x)
     plt.legend()
     plt.show()
+
+def create_mini_imagenet(path_val_imagenet):
+    with open(path_val_imagenet) as f:
+        lines = f.readlines()
+        shuffle(lines)
+        print lines[:10]
+
 
 #imagenet
 #-------------------------------------------------------------------------
@@ -216,7 +227,7 @@ data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/ho
 """
 #dataset
 #---------------------------------------------------------------------------
-#"""
+"""
 txt_data = "/home/sormeno/Desktop/videos/1/val.txt"
 path_imgs = "/home/sormeno/Desktop/videos/1/shots/"
 path_xmls = "/home/sormeno/Desktop/videos/1/bbox_data.txt"
@@ -231,17 +242,22 @@ prototxt =  "/home/sormeno/py-faster-rcnn/models/imagenet/VGG16/faster_rcnn_end2
 caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_imagenet.caffemodel"
 
 data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/mdata_imagenet_1")
-#"""
-#plot_presicion_vs_recall(1)
-#plot_data_vs_trsh(2)
-#print get_bbox_from_txt("/home/sebastian/Escritorio/universidad/memoria/py-faster-rcnn/tools/videos/1/bbox_detected.txt", 122)
-#prototxt = "/home/sebastian/Escritorio/data_app/test_pascal.prototxt"
-#caffemodel = "/home/sebastian/Escritorio/data_app/VGG16_faster_rcnn_final.caffemodel"
-#path_img = "/home/sebastian/Escritorio/ILSVRC2012_val_00000001.JPEG"
-#path_xml = "/home/sebastian/Escritorio/ILSVRC2012_val_00000001.xml"
-#gt = get_bbox_from_xml(path_xml)
-#net = init_net(prototxt, caffemodel, "cpu")
-#predicted = get_img_bbox2(path_img, net)
-#img = cv2.imread(path_img)
-#show_best_roi(img,gt, predicted)
+"""
+#plot_presicion_vs_recall("mdata", 2)
+#plot_data_vs_trsh("mdata", 2)
 
+#print get_bbox_from_txt("/home/sebastian/Escritorio/universidad/memoria/py-faster-rcnn/tools/videos/1/bbox_detected.txt", 122)
+
+"""
+prototxt = "/home/sebastian/Escritorio/data_app/test_pascal.prototxt"
+caffemodel = "/home/sebastian/Escritorio/data_app/VGG16_faster_rcnn_final.caffemodel"
+path_img = "/home/sebastian/Escritorio/universidad/memoria/py-faster-rcnn/tools/videos/1/to_proces/12.jpg"
+path_xml = "/home/sebastian/Escritorio/ILSVRC2012_val_00000001.xml"
+path_txt = "/home/sebastian/Escritorio/universidad/memoria/py-faster-rcnn/tools/videos/1/bbox_detected.txt"
+gt = get_bbox_from_txt(path_txt, "12")
+net = init_net(prototxt, caffemodel, "cpu")
+predicted = get_img_bbox2(path_img, net)
+img = cv2.imread(path_img)
+show_best_roi(img,gt, predicted)
+"""
+create_mini_imagenet("/home/sormeno/Datasets/Imagenet/ILSVRC13/data/det_lists/val.txt")
