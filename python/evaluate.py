@@ -140,6 +140,14 @@ def show_best_roi(img, gt, predicted):
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
+def sort_data_to_plot(x_data, y_data):
+    list_tuples = []
+    for i in range(0, len(x_data)):
+        list_tuples.append([x_data[i], y_data[i]])
+    list_tuples = sorted(list_tuples, key=lambda x: x[0])
+    new_data_x, new_data_y = map(list, zip(*list_tuples))
+    return (new_data_x, new_data_y)
+
 def data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode="cpu", output="out"):
     r_iou = []
     r_presicion = []
@@ -160,7 +168,7 @@ def plot_presicion_vs_recall(dataset, id):
     i_iou, i_presicion, i_recall = load_data(path, dataset, trained, id)
     trained = "pascal"
     p_iou, p_presicion, p_recall = load_data(path, dataset, trained, id)
-    to_plot([i_recall, p_recall],[i_presicion, p_presicion],['imagenet', 'pascal'],'recall', 'presicion')
+    to_plot([i_recall, p_recall],[i_presicion, p_presicion],['imagenet', 'pascal'],'recall', 'presicion', "presicion vs recall en " +dataset)
 
 def plot_data_vs_trsh(dataset, id):
     path = "/home/sebastian/Escritorio/universidad/memoria/py-faster-rcnn/tools/Memoria/calculados"
@@ -179,11 +187,13 @@ def load_data(path, dataset, trained, id):
     recall = np.load(path + "/" + dataset + "_" + trained + "_" + str(id)+"_recall.npz")['arr_0']
     return (iou, presicion, recall)
 
-def to_plot(data_x,data_y, labels, axis_x, axis_y):
+def to_plot(data_x,data_y, labels, axis_x, axis_y, title):
     for i in range(len(data_x)):
-        plt.plot(data_x[i], data_y[i], label=labels[i])
+        x, y = sort_data_to_plot(data_x[i], data_y[i])
+        plt.plot(x, y, label=labels[i])
     plt.ylabel(axis_y)
     plt.xlabel(axis_x)
+    plt.title(title)
     plt.legend()
     plt.show()
 
@@ -195,6 +205,16 @@ def create_mini_imagenet(path_val_imagenet):
         f = open(path_val_imagenet + 'min_val.txt', 'w')
         for line in selected:
             f.write(line)
+        f.close()
+
+def bbox_val_imagenet(path_val_imagenet, path_xmls):
+    with open(path_val_imagenet + "val.txt") as f:
+        lines = f.readlines()
+        f = open(path_val_imagenet + 'min_val.txt', 'w')
+        for line in lines:
+            name = line.strip().split(" ")[0]
+            print name+".xml"
+            #f.write(line)
         f.close()
 
 #imagenet
@@ -246,10 +266,7 @@ caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_
 
 data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/mdata_imagenet_1")
 """
-#plot_presicion_vs_recall("mdata", 2)
-#plot_data_vs_trsh("mdata", 2)
-
-#print get_bbox_from_txt("/home/sebastian/Escritorio/universidad/memoria/py-faster-rcnn/tools/videos/1/bbox_detected.txt", 122)
+#plot_presicion_vs_recall("pascal", 1)
 
 """
 prototxt = "/home/sebastian/Escritorio/data_app/test_pascal.prototxt"
@@ -263,4 +280,5 @@ predicted = get_img_bbox2(path_img, net)
 img = cv2.imread(path_img)
 show_best_roi(img,gt, predicted)
 """
-create_mini_imagenet("/home/sormeno/Datasets/Imagenet/ILSVRC13/data/det_lists/")
+
+bbox_val_imagenet("/home/sormeno/Datasets/Imagenet/ILSVRC13/data/det_lists/", 1)
