@@ -302,9 +302,17 @@ def normalize_des():
         np.save("all_rois_j/r_n_" + str(i), comp)
 
 def load_bin_feature(path_to_bin):
-    with open(path_to_bin, 'rb') as f:
-        data = np.fromfile(f, dtype=np.float32)
-        print str(data[0]) + " " + str(data[1]) + " " + str(data[2]) + " " + str(data[4093]) + " " + str(data[4094]) + " " + str(data[4095])
+    import array
+    import os
+    data = array.array('f')
+    f = open(path_to_bin, 'rb')
+    data.fromfile(f, 4096)
+    print str(data[0]) + " " + str(data[1]) + " " + str(data[2]) + " " + str(data[4093]) + " " + str(data[4094]) + " " + str(data[4095])
+    f.seek(16384,os.SEEK_SET)
+    data = array.array('f')
+    data.fromfile(f, 4096)
+    print str(data[0]) + " " + str(data[1]) + " " + str(data[2]) + " " + str(data[4093]) + " " + str(data[4094]) + " " + str(data[4095])
+
 
 def test_dist(feature):
     result_list = []
@@ -326,3 +334,5 @@ def test_dist(feature):
         print result[i][1]
         to_show.append(cv2.imread(result[i][1]))
     make_grid(to_show, size, size)
+
+load_bin_feature("/home/sormeno/features_t9_1.bin")
