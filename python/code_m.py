@@ -301,6 +301,11 @@ def normalize_des():
         comp = normalize_feature(comp)
         np.save("all_rois_j/r_n_" + str(i), comp)
 
+def load_bin_feature(path_to_bin):
+    with open(path_to_bin, 'rb') as f:
+        data = np.fromfile(f, dtype=np.float32)
+        print str(data[0]) + " " + str(data[1]) + " " + str(data[2]) + " " + str(data[4093]) + " " + str(data[4094]) + " " + str(data[4095])
+
 def test_dist(feature):
     result_list = []
     feature = normalize_feature(feature)
