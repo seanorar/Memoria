@@ -1,9 +1,10 @@
 import glob
 #import requests
-from pathlib import Path
+#from pathlib import Path
 from img_processing import zero_padding
 from evaluate import *
 import cv2
+import os, shutil
 
 def get_files_to_txt(path, path_out):
     file_names = glob.glob(path + "*")
@@ -150,4 +151,19 @@ def get_urls_imgs():
             url_img = "http://www-nlpir.nist.gov/projects/tv2013/pastdata/instance.search.topics/tv13.example.images/" + line
             print(url_img)
             get_img_from_url(url_img)
+
+def separete_dataset(path_imgs, txt_train, txt_val, extension, output_dir):
+    mode = [(txt_train, "train"),(txt_val, "val")]
+    for element in mode:
+        with open(element[0]) as f:
+            directory = output_dir + element[1]
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            lines = f.readlines()
+            for line in lines:
+                name = line.rstrip()
+                old_img = path_imgs + name + "." + extension
+                new_img = directory
+                shutil.copy2(old_img, new_img)
+
 
