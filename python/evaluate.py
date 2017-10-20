@@ -51,7 +51,7 @@ def get_bbox_from_xml(xml_path):
     root = tree.getroot()
     gt_bbox = []
     for obj in root.iter('object'):
-        for bbox in obj.iter("bndbox"):
+        for bbox in obj.findall("bndbox"):
             xmin = int(bbox.find('xmin').text.split(".")[0])
             xmax = int(bbox.find('xmax').text.split(".")[0])
             ymin = int(bbox.find('ymin').text.split(".")[0])
@@ -207,14 +207,22 @@ def create_mini_imagenet(path_val_imagenet):
             f.write(line)
         f.close()
 
-def bbox_val_imagenet(path_val_imagenet, path_xmls):
+def bbox_val_imagenet(path_val_imagenet, path_xmls, path_imgs):
     with open(path_val_imagenet + "val.txt") as f:
         lines = f.readlines()
-        f = open(path_val_imagenet + 'min_val.txt', 'w')
+        f = open(path_val_imagenet + 'bboxs2.txt', 'w')
         for line in lines:
             name = line.strip().split(" ")[0]
-            print name+".xml"
-            #f.write(line)
+            bboxs = get_bbox_from_xml(path_xmls + name + ".xml")
+            img = cv2.imread(path_imgs + name + ".JPEG")
+            h,w,c = img.shape
+            #print bboxs
+            for bbox in bboxs:
+                if (bbox[0] > bbox[2] or bbox[1] > bbox[3] or w < bbox[2] or h < bbox[3] ):
+                    print "error"
+                else:
+                    newline = name + " " + str(bbox[0]) + " " + str(bbox[1]) + " " + str(bbox[2]) + " " + str(bbox[3]) + "\n"
+                    f.write(newline)
         f.close()
 
 #imagenet
@@ -281,4 +289,4 @@ img = cv2.imread(path_img)
 show_best_roi(img,gt, predicted)
 """
 
-bbox_val_imagenet("/home/sormeno/Datasets/Imagenet/ILSVRC13/data/det_lists/", 1)
+#bbox_val_imagenet("/home/sormeno/Datasets/Imagenet/ILSVRC2014_devkit/data/det_lists/", "/home/sormeno/Datasets/Imagenet/ILSVRC2013_DET_bbox_val/", "/home/sormeno/Datasets/Imagenet/ILSVRC2013_DET_val/")
