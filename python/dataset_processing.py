@@ -166,4 +166,34 @@ def separete_dataset(path_imgs, txt_train, txt_val, extension, output_dir):
                 new_img = directory
                 shutil.copy2(old_img, new_img)
 
+def generate_clases_dict(txt_classes):
+    output_dict = {}
+    with open(txt_classes) as f:
+        id = 0
+        lines = f.readlines()
+        for line in lines:
+            class_name = line.rstrip()
+            output_dict[class_name] = str(id)
+            id += 1
+        return output_dict
 
+def extract_objects_from_dataset(path_imgs, path_xmls, txt_data, extension, output_dir, txt_classes):
+    with open(txt_data) as f:
+        id_image = 0
+        classes_dict = generate_clases_dict(txt_classes)
+        directory = output_dir + "objects"
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        lines = f.readlines()
+        txt_out = open(output_dir + 'objects.txt', 'w')
+        for line in lines:
+            name = line.rstrip()
+            img = cv2.imread(path_imgs + name + extension)
+            bboxs, clases = get_bbox_from_xml(path_xmls + name + ".xml", True)
+            for i in range(0,len(bboxs)):
+                bbox = bboxs[i]
+                txt_out.write(str(id_image) + " " + classes_dict[clases[i]] + "\n")
+                roi = img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
+                cv2.imwrite(directory + "/" + str(id_image) + extension, roi)
+                id_image += 1
+        txt_out.close()
