@@ -194,7 +194,7 @@ def extract_objects_from_dataset(path_imgs, path_xmls, txt_data, extension, outp
             for i in range(0,len(bboxs)):
                 bbox = bboxs[i]
                 txt_out1.write(str(id_image) + " " + classes_dict[clases[i]] + "\n")
-                txt_out2.write(str(id_image) + extension)
+                txt_out2.write(str(id_image) + extension + "\n")
                 roi = img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
                 cv2.imwrite(directory + "/" + str(id_image) + extension, roi)
                 id_image += 1
