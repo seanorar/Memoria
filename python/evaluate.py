@@ -46,17 +46,22 @@ def get_bbox_from_txt(txt_path, img_id):
                     result.append([aux[3],aux[4],aux[1] + aux[3], aux[2] + aux[4]])
             return result
 
-def get_bbox_from_xml(xml_path):
+def get_bbox_from_xml(xml_path, get_classes=False):
     tree = ET.parse(xml_path)
     root = tree.getroot()
     gt_bbox = []
+    gt_classes = []
     for obj in root.iter('object'):
+        name = obj.find('name').text
         for bbox in obj.findall("bndbox"):
             xmin = int(bbox.find('xmin').text.split(".")[0])
             xmax = int(bbox.find('xmax').text.split(".")[0])
             ymin = int(bbox.find('ymin').text.split(".")[0])
             ymax = int(bbox.find('ymax').text.split(".")[0])
             gt_bbox.append([xmin,ymin, xmax, ymax])
+            gt_classes.append(name)
+    if (get_classes):
+        return (gt_bbox, gt_classes)
     return gt_bbox
 
 def evaluate_iou(bboxs_gt, bboxs_predicted, iou_relevant=0.5):

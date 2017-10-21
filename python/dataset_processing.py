@@ -185,15 +185,18 @@ def extract_objects_from_dataset(path_imgs, path_xmls, txt_data, extension, outp
         if not os.path.exists(directory):
             os.makedirs(directory)
         lines = f.readlines()
-        txt_out = open(output_dir + 'objects.txt', 'w')
+        txt_out1 = open(output_dir + 'output_1.txt', 'w')
+        txt_out2 = open(output_dir + 'output_2.txt', 'w')
         for line in lines:
             name = line.rstrip()
             img = cv2.imread(path_imgs + name + extension)
             bboxs, clases = get_bbox_from_xml(path_xmls + name + ".xml", True)
             for i in range(0,len(bboxs)):
                 bbox = bboxs[i]
-                txt_out.write(str(id_image) + " " + classes_dict[clases[i]] + "\n")
+                txt_out1.write(str(id_image) + " " + classes_dict[clases[i]] + "\n")
+                txt_out2.write(str(id_image) + extension)
                 roi = img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
                 cv2.imwrite(directory + "/" + str(id_image) + extension, roi)
                 id_image += 1
-        txt_out.close()
+        txt_out1.close()
+        txt_out2.close()
