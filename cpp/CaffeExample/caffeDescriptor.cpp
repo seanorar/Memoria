@@ -52,7 +52,6 @@ void proces_line_imagenet(string line, string buffer[]){
         }
 }
 
-
 void get_features(string dataset_shots, string dataset_bbox, string data_out){
 	//extraccion de features a partir de los bbox
         

@@ -7,19 +7,28 @@
 
 using namespace std;
 
-void get_features(string dataset_shots, string dataset_bbox, string data_out){
+void get_features(string imgs_path_folder, string imgs_txt, string data_out){
         //extraccion de features a partir de los bbox
-
-        string str_pt("/home/sormeno/AlexNet/bvlc_alexnet_memory.prototxt");
-        string str_caffemodel("/home/sormeno/AlexNet/bvlc_alexnet.caffemodel");
+        string str_pt("/home/sormeno/Models/DSH/dsh.prototxt");
+        string str_caffemodel("/home/sormeno/Models/DSH/dsh.caffemodel");
         CaffePredictor caffe_predictor(str_pt, str_caffemodel, 256, 256, CAFFE_GPU_MODE);
-        string im_folder = dataset_shots;
-        int des_size = 0;
-        string im_name = ".jpg";
-        cv::Mat img = cv ::imread(im_name);
-        float * des_im = caffe_predictor.getCaffeDescriptor(img, &des_size, "fc7");
-	for(int i = 0; i < des_size; i += 1){
-		cout << des_im[i] << " ";
+
+	ofstream writeFile (data_out, ios::out | ios::binary);
+	ifstream file(imgs_txt);
+	string str;
+	while (getline(file, str)){
+		cout << str << endl;
+        	int des_size = 0;
+        	cv::Mat img = cv ::imread(imgs_path_folder + str);
+        	float * des_im = caffe_predictor.getCaffeDescriptor(img, &des_size, "ip1");
+		writeFile.write((char*) des_im, sizeof(float) * des_size);
 	}
-	cout << endl;
+	writeFile.close();
+}
+
+int main(int argc, char* argv[]){
+	string imgs_path_folder = "/home/sormeno/Datasets/VOC/val/val/";
+	string imgs_txt = "/home/sormeno/Datasets/VOC/val/val.txt";
+	string data_out = "/home/sormeno/dsh_result.bin";
+	get_features(imgs_path_folder, imgs_txt, data_out);
 }
