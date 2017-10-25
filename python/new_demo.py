@@ -69,13 +69,6 @@ def vis_detections(im, class_name, dets, thresh=0.5):
     plt.tight_layout()
     plt.draw()
 
-def getbbox(net, im):
-    """Detect object classes in an image using pre-computed object proposals."""
-
-    # Detect all object classes and regress object bounds
-    boxes = bbox_detect(net, im)
-    return boxes
-
 def parse_args():
     """Parse input arguments."""
     parser = argparse.ArgumentParser(description='Faster R-CNN demo')
@@ -94,19 +87,23 @@ def parse_args():
 def get_all_bbox(imgs_names, net):
 
     cfg.TEST.HAS_RPN = True  # Use RPN for proposals
-
-    args = parse_args()
-
-    # Warmup on a dummy image
-    im = 128 * np.ones((300, 500, 3), dtype=np.uint8)
-    for i in xrange(2):
-        _, _= im_detect(net, im)
-
+    #im = 128 * np.ones((300, 500, 3), dtype=np.uint8)
+    #for i in xrange(2):
+    #    _, _= im_detect(net, im)
     bbox_list = []
     for name in imgs_names:
         print name
         im = cv2.imread(name)
-        bbox_result = getbbox(net, im)
+        bbox_result = bbox_detect(net, im)
+        print "se detectaron: " + str(len(bbox_result))
+        min_area = 10000000
+        max_area = 0
+        for bbox in bbox_result:
+            area = (bbox[2]-bbox[0])*(bbox[3]-bbox[1])
+            if area < min_area:
+                min_area = area
+            if area > max_area:
+                max_area = area
         bbox_list.append(bbox_result)
     return bbox_list
 
