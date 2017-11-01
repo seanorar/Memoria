@@ -230,6 +230,14 @@ def bbox_val_imagenet(path_val_imagenet, path_xmls, path_imgs):
                     f.write(newline)
         f.close()
 
+#prototxt_i = "/home/sormeno/py-faster-rcnn/models/imagenet/VGG16/faster_rcnn_end2end/test.prototxt"
+#caffemodel_i = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_imagenet.caffemodel"
+prototxt_i = "/home/sormeno/Desktop/ZF_ILSVRC.prototxt"
+caffemodel_i = "/home/sormeno/Desktop/ZF_ILSVRC_170W_600_31_0.v2.caffemodel"
+
+prototxt_p =  "/home/sormeno/py-faster-rcnn/models/pascal_voc/VGG16/faster_rcnn_end2end/test.prototxt"
+caffemodel_p = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_final.caffemodel"
+
 #imagenet
 #-------------------------------------------------------------------------
 """
@@ -237,10 +245,8 @@ txt_data = "/home/sormeno/Datasets/Imagenet/ILSVRC13/data/det_lists/val.txt"
 path_imgs = "/home/sormeno/Datasets/Imagenet/ILSVRC13/ILSVRC2013_DET_val/"
 path_xmls = "/home/sormeno/Datasets/Imagenet/ILSVRC13/ILSVRC2013_DET_bbox_val/"
 
-prototxt =  "/home/sormeno/py-faster-rcnn/models/imagenet/VGG16/faster_rcnn_end2end/test.prototxt"
-caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_imagenet.caffemodel"
-
-data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/pascal_1") 
+data_to_graphs(txt_data, path_imgs, path_xmls, prototxt_p, caffemodel_p, "gpu", "/home/sormeno/imagenet_pascal")
+data_to_graphs(txt_data, path_imgs, path_xmls, prototxt_i, caffemodel_i, "gpu", "/home/sormeno/imagenet_imagenet")
 """
 
 #pascal
@@ -250,17 +256,10 @@ txt_data = "/home/sormeno/Datasets/Pascal/val.txt"
 path_imgs = "/home/sormeno/Datasets/Pascal/Images/"
 path_xmls = "/home/sormeno/Datasets/Pascal/xmls/"
 
-prototxt =  "/home/sormeno/py-faster-rcnn/models/pascal_voc/VGG16/faster_rcnn_end2end/test.prototxt"
-caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_final.caffemodel"
-
-#----------------------------------------------------------------------------
-data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/pascal_1")
-
-prototxt =  "/home/sormeno/py-faster-rcnn/models/imagenet/VGG16/faster_rcnn_end2end/test.prototxt"
-caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_imagenet.caffemodel"
-
-data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/imagenet_1")
+data_to_graphs(txt_data, path_imgs, path_xmls, prototxt_p, caffemodel_p, "gpu", "/home/sormeno/pascal_pascal")
+data_to_graphs(txt_data, path_imgs, path_xmls, prototxt_i, caffemodel_i, "gpu", "/home/sormeno/pascal_imagenet")
 """
+
 #dataset
 #---------------------------------------------------------------------------
 """
@@ -268,16 +267,8 @@ txt_data = "/home/sormeno/Desktop/videos/1/val.txt"
 path_imgs = "/home/sormeno/Desktop/videos/1/shots/"
 path_xmls = "/home/sormeno/Desktop/videos/1/bbox_data.txt"
 
-prototxt = "/home/sormeno/py-faster-rcnn/models/pascal_voc/VGG16/faster_rcnn_end2end/test.prototxt"
-caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_final.caffemodel"
-
-#----------------------------------------------------------------------------
-data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/mdata_pascal_1")
-
-prototxt =  "/home/sormeno/py-faster-rcnn/models/imagenet/VGG16/faster_rcnn_end2end/test.prototxt"
-caffemodel = "/home/sormeno/py-faster-rcnn/data/faster_rcnn_models/VGG16_faster_rcnn_imagenet.caffemodel"
-
-data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, "gpu", "/home/sormeno/mdata_imagenet_1")
+data_to_graphs(txt_data, path_imgs, path_xmls, prototxt_p, caffemodel_p, "gpu", "/home/sormeno/mdata_pascal_1")
+data_to_graphs(txt_data, path_imgs, path_xmls, prototxt_i, caffemodel_i, "gpu", "/home/sormeno/mdata_imagenet_1")
 """
 #plot_presicion_vs_recall("pascal", 1)
 
