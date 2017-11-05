@@ -1,9 +1,10 @@
 import array
 import os
-from scipy.spatial.distance import hamming
+from scipy.spatial.distance import hamming, euclidean
 import numpy as np
 
-def load_bin_feature(txt_data, path_to_bin, len_feature):
+
+def evaluate_map(txt_data, path_to_bin, len_feature, comp_func):
     with open(txt_data) as f:
         lines = f.readlines()
         list_classes = []
@@ -13,21 +14,27 @@ def load_bin_feature(txt_data, path_to_bin, len_feature):
         bf = open(path_to_bin, 'rb')
         seek_counter = 0
         map = 0.0
+        #all_features = load_all_features(path_to_bin, len_feature)
         while (True):
             try:
                 data = array.array('f')
                 data.fromfile(bf, len_feature)
-                result = compare_features(data, list_classes[seek_counter], list_classes, path_to_bin, hamming)
+                result = compare_features(data, list_classes[seek_counter], list_classes, path_to_bin, comp_func)
+                #result = compare_features2(data, list_classes[seek_counter], list_classes, all_features, comp_func)
                 list_id = get_id_list(result, list_classes)
                 ap = get_ap(list_classes[seek_counter], list_id)
                 map = map + ap
                 print seek_counter
+                print result
+                print list_id
                 print ap
                 seek_counter += 1
                 bf.seek((seek_counter * len_feature) * 4, os.SEEK_SET)
             except:
                 break
+        print "------------------------"
         print (map / seek_counter)
+
 
 def compare_tupples(a, b , class_r, list_classes):
     if (a[1] == b[1]):
@@ -41,6 +48,23 @@ def compare_tupples(a, b , class_r, list_classes):
         else:
             return 1
 
+
+def load_all_features(bin_data, len_feature):
+    result = []
+    bf = open(bin_data, 'rb')
+    id_element = 0
+    while True:
+        try:
+            data = array.array('f')
+            data.fromfile(bf, len_feature)
+            result.append(data)
+            id_element += 1
+            bf.seek((id_element * len_feature) * 4, os.SEEK_SET)
+        except:
+            break
+    return result
+
+
 def compare_features(feature, feature_id, list_classes, bin_data, dist):
     compare_result = []
     bf = open(bin_data, 'rb')
@@ -50,11 +74,20 @@ def compare_features(feature, feature_id, list_classes, bin_data, dist):
         try:
             data = array.array('f')
             data.fromfile(bf, len_feature)
-            compare_result.append((id_element, dist(np.sign(feature), np.sign(data))))
+            compare_result.append((id_element, dist(feature, data)))
             id_element += 1
             bf.seek((id_element * len_feature) * 4, os.SEEK_SET)
         except:
             break
+    result = sorted(compare_result, cmp= lambda x,y: compare_tupples(x,y,feature_id, list_classes))
+    return result
+
+
+def compare_features2(feature, feature_id, list_classes, all_data, dist):
+    compare_result = []
+    for id_element in range(0, len(all_data)):
+        data = all_data[id_element]
+        compare_result.append((id_element, dist(feature, data)))
     result = sorted(compare_result, cmp= lambda x,y: compare_tupples(x,y,feature_id, list_classes))
     return result
 
@@ -66,6 +99,10 @@ def get_id_list(pos_list, classes_list):
     return result_list
 
 
+def hamming_dist(feature1, feature2):
+    return hamming(np.sign(feature1), np.sign(feature2))
+
+
 def get_ap(relevant_id, list_id):
     ap = 0.0
     n_relevants = 0.0
@@ -75,6 +112,7 @@ def get_ap(relevant_id, list_id):
             ap = ap + (n_relevants / (i + 1.0))
     return (ap / n_relevants)
 
+
 txt_data = "/home/sebastian/Escritorio/val_1.txt"
-path_to_bin = "/home/sebastian/Escritorio/dsh_result.bin"
-load_bin_feature(txt_data, path_to_bin, 12)
+path_to_bin = "/home/sebastian/Escritorio/alex_hfc8_ft_result.bin"
+evaluate_map(txt_data, path_to_bin, 48, euclidean)
