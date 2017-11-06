@@ -56,7 +56,6 @@ def create_img_roi():
     l.pack(side="left")
 
 
-
 root = Tk()
 proto_frame = Frame(root)
 proto_frame.pack()
