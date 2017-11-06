@@ -42,6 +42,7 @@ void proces_line(string line, double buffer[]){
 	}
 }
 
+
 void proces_line_imagenet(string line, string buffer[]){
 
         istringstream iss(line);
@@ -52,11 +53,32 @@ void proces_line_imagenet(string line, string buffer[]){
         }
 }
 
-void get_features(string dataset_shots, string dataset_bbox, string data_out){
+double hammming_distance(cv::Mat f1, cv::Mat f2){
+	double len = f1.cols;
+	double total = 0.0;
+	for (int i = 0; i < len; i+=1){
+		if (f1.at<float>(0,i) != f2.at<float>(0, i)){
+			total += 1.0;
+		}
+	}
+	return (total / len);
+}
+
+void get_features(string dataset_shots, string dataset_bbox, string data_out, bool is_binary){
 	//extraccion de features a partir de los bbox
+	string str_pt, str_caffemodel, layer_name;
         
-	string str_pt("/home/sormeno/AlexNet/bvlc_alexnet_memory.prototxt");
-        string str_caffemodel("/home/sormeno/AlexNet/bvlc_alexnet.caffemodel");
+	if (is_binary){
+		str_pt = "/home/sormeno/Models/Alexnet-DSH/alex_hfc8_12.prototxt";
+        	str_caffemodel = "/home/sormeno/Models/Alexnet-DSH/alex_hfc8_12.caffemodel";
+		layer_name = "hfc8";	
+	}
+	else {
+		str_pt = "/home/sormeno/Models/Alexnet/bvlc_alexnet_memory.prototxt";
+        	str_caffemodel = "/home/sormeno/Models/Alexnet/bvlc_alexnet.caffemodel";
+        	layer_name = "fc7";
+	}
+
         CaffePredictor caffe_predictor(str_pt, str_caffemodel, 256, 256, CAFFE_GPU_MODE);
 
 	string im_folder = dataset_shots;
@@ -77,9 +99,11 @@ void get_features(string dataset_shots, string dataset_bbox, string data_out){
                 cv::Mat aux_image = cv ::imread(im_name);
 		cv::Rect r((int)buffer[0],(int)buffer[1], (int)( buffer[2]-buffer[0]), (int) (buffer[3]-buffer[1]));		
         	cv::Mat im_bbox(aux_image, r);
-                float * des_im = caffe_predictor.getCaffeDescriptor(im_bbox, &des_size, "fc7");
-		normalize(des_im, 4096);
-                writeFile.write((char*) des_im, sizeof(float) *des_size);
+                float * des_im = caffe_predictor.getCaffeDescriptor(im_bbox, &des_size, layer_name);
+		if (!is_binary){
+			normalize(des_im, des_size);
+		}
+                writeFile.write((char*) des_im, sizeof(float) * des_size);
 		n_total += 1;
         }
         writeFile.close();
@@ -89,8 +113,8 @@ void get_features(string dataset_shots, string dataset_bbox, string data_out){
 void get_features_imagenet(string dataset_shots, string dataset_bbox, string data_out){
         //extraccion de features a partir de los bbox
 
-        string str_pt("/home/sormeno/AlexNet/bvlc_alexnet_memory.prototxt");
-        string str_caffemodel("/home/sormeno/AlexNet/bvlc_alexnet.caffemodel");
+        string str_pt("/home/sormeno/Models/Alexnet/bvlc_alexnet_memory.prototxt");
+        string str_caffemodel("/home/sormeno/Models/Alexnet/bvlc_alexnet.caffemodel");
         CaffePredictor caffe_predictor(str_pt, str_caffemodel, 256, 256, CAFFE_GPU_MODE);
 
         string im_folder = dataset_shots;
@@ -148,48 +172,28 @@ vector <string> split(string str, char delimiter) {
 }
 
 vector <int> get_shot_id(string file_name){
-        //int limit = 100;
 	//obtiene el id del shot asociado al respectivo roi	
 	ifstream file(file_name.c_str());
         string line;
 	vector <int> result;
-        //double actual = 0;
-	//int added_elements = 0;
 	while (getline(file, line)){
 		double buffer[6]; //cambiar 5 por 6 
                 proces_line(line, buffer);
-                //if (actual != buffer[5]){
-		//	actual = buffer[5];
-                //        added_elements = 0;
-		//}
-                //if (added_elements < limit){
-			result.push_back(buffer[4]);
-		//	added_elements +=1;
-		//}
+		result.push_back(buffer[4]);
 	}
 	return result;
 }
 
 vector <vector<double>> get_shot_info(string file_name){
-        //int limit = 100;
         //obtiene el id del shot asociado al respectivo roi     
         ifstream file(file_name.c_str());
         string line;
         vector <vector<double>> result;
-   	//double actual = 0; 
-        //int added_elements = 0;
         while (getline(file, line)){
                 double buffer[6];  //cambiar 5 por 6
                 proces_line(line, buffer);
-		//if (actual != buffer[5]){
-                //        actual = buffer[5];
-                //        added_elements = 0;
-                //}
-                //if (added_elements < limit){
-                        vector<double> aux{begin(buffer), end(buffer)}; 
-                	result.push_back(aux);
-                //        added_elements +=1;
-                //}
+                vector<double> aux{begin(buffer), end(buffer)}; 
+                result.push_back(aux);
         }
         return result;
 }
@@ -219,6 +223,7 @@ vector <int> gt(string file_name, int video_id, int img_id){
 	return gt;
 }
 
+
 bool is_relevant(int im_id, vector<int> gt_list){
 	//determina si un elemento es relevante dentro de la consulta
 	
@@ -228,6 +233,7 @@ bool is_relevant(int im_id, vector<int> gt_list){
 
 	return false;
 }
+
 
 tuple <float, vector<int> > get_ap(vector <int> similar_list, vector <int> gt_list){
 	//evaluación del average_precision 
@@ -249,28 +255,55 @@ tuple <float, vector<int> > get_ap(vector <int> similar_list, vector <int> gt_li
 	return make_tuple(average / num_relevant, r_pos);	
 }
 
-cv::Mat get_feature(string name_query){
-	//extracción de característica de una imagen.
-	string str_pt("/home/sormeno/AlexNet/bvlc_alexnet_memory.prototxt");
-        string str_caffemodel("/home/sormeno/AlexNet/bvlc_alexnet.caffemodel");
+
+cv::Mat get_feature(string name_query, bool is_binary){
+	//extracción de característica de una imagen
+	string str_pt, str_caffemodel, layer_name;
+
+	if (is_binary){
+        	str_pt = "/home/sormeno/Models/Alexnet-DSH/alex_hfc8_12.prototxt";
+        	str_caffemodel = "/home/sormeno/Models/Alexnet-DSH/alex_hfc8_12.caffemodel";
+        	layer_name = "hfc8";
+	}
+	else{
+	        str_pt = "/home/sormeno/Models/Alexnet/bvlc_alexnet_memory.prototxt";
+        	str_caffemodel = "/home/sormeno/Models/Alexnet/bvlc_alexnet.caffemodel";
+        	layer_name = "fc7";	
+	}
+
         CaffePredictor caffe_predictor(str_pt, str_caffemodel, 256, 256, CAFFE_GPU_MODE);
 
         cv::Mat mat_image = cv::imread(name_query);
         JUtil::jmsr_assert(!mat_image.empty(), " image failed");
         int des_size = 0;
-        float *des_consulta = caffe_predictor.getCaffeDescriptor(mat_image, &des_size, "fc7");
-        normalize(des_consulta, 4096);
+        float *des_consulta = caffe_predictor.getCaffeDescriptor(mat_image, &des_size, layer_name);
+	cout << des_size <<endl;
+	if (!is_binary){
+		normalize(des_consulta, des_size);
+	}
         cv::Mat mat_consulta = cv::Mat(1, des_size, CV_32F, des_consulta);
-	
 	return mat_consulta;
 }
 
 
-vector <int> get_similar(vector <cv::Mat> mat_consultas, string feature_data, string bbox_data){
+cv::Mat feature_sign(cv::Mat feature){
+	int len = feature.cols;
+	cv::Mat result = cv::Mat::zeros(1,len,CV_32F);
+	for (int i =0; i <len ; i += 1){
+		if (feature.at<float>(0,i) > 0 ){
+			result.at<float>(0,i) = 1;
+		}
+	}
+	return result;
+} 
+
+
+vector <int> get_similar(vector <cv::Mat> mat_consultas, string feature_data, string bbox_data, bool is_binary){
         //función que a partir de un descriptor, entrega una lista de los elementos semejantes ordenados desde el más cercano
-        
+        int feature_len = mat_consultas.at(0).cols;
 	vector <pair<double, string>> dist_list;
-        float result [4096];
+        float result [feature_len];
+	cout<< "leyendo " << feature_data << endl;
         ifstream readFile (feature_data, ios::in | ios::binary);
         ifstream file(bbox_data);
         string str;
@@ -282,27 +315,39 @@ vector <int> get_similar(vector <cv::Mat> mat_consultas, string feature_data, st
                 double buffer[6];
                 proces_line(str, buffer);
                 if (actual != buffer[5]){
-                        cout << roi_img_contador<<endl;
                         cout << buffer[5] << endl;
                         actual = buffer[5];
                         roi_img_contador = 0;
                 }
                 string im_name = to_string(i);
-                readFile.read ((char*)result, sizeof(float)*4096);
+                readFile.read ((char*)result, sizeof(float) * feature_len);
                 if (roi_img_contador < 500){
              		roi_img_contador += 1;
-                	cv::Mat mat_im = cv::Mat(1, 4096, CV_32F, result);
+                	cv::Mat mat_im = cv::Mat(1, feature_len, CV_32F, result);
 			int n_vectores = mat_consultas.size();
 			for(int k = 0; k < n_vectores; k += 1){
 				cv::Mat mat_consulta = mat_consultas.at(k);
-                		double dist = cv::norm(mat_consulta, mat_im);
-                		dist_list.push_back(make_pair(dist ,im_name));
+				double dist = 0;
+				if (is_binary){
+					cout<<"----------------------------"<<endl;
+					for (int p  = 0; p < 12; p+=1){
+						cout << mat_consulta.at<float>(0,p) << "  " << feature_sign(mat_consulta).at<float>(0,p)<<endl;
+					}
+					dist = hammming_distance(feature_sign(mat_consulta), feature_sign(mat_im));
+				}
+				else{
+					dist = cv::norm(mat_consulta, mat_im);
+				}
+				dist_list.push_back(make_pair(dist ,im_name));
 			}
 		}
         }
         file.close();
         readFile.close();
+	cout <<endl;
         sort(dist_list.begin(),dist_list.end());
+        cout <<endl;
+
 	vector<int> final_result;
 	int n_dist = dist_list.size();
         for(int i = 0; i < n_dist; i += 1){
@@ -310,6 +355,7 @@ vector <int> get_similar(vector <cv::Mat> mat_consultas, string feature_data, st
 	} 
 	return final_result;
 }
+
 
 void test_pca(){
         float result [4096];
@@ -329,6 +375,7 @@ void test_pca(){
 	pca.write(fs);
 	fs.release();
 }
+
 
 void save_result_im(vector <int> f_roi_id, vector <vector< double >> shots_info, string path_img,  string path_out, vector <int> pos = vector<int>()){
 	int len_pos = pos.size();
@@ -364,12 +411,13 @@ void save_result_im(vector <int> f_roi_id, vector <vector< double >> shots_info,
 	}
 }
 
+
 void get_top_100_roi(string img_path){
 	vector <cv::Mat> mat_consulta;
-	mat_consulta.push_back(get_feature(img_path));
+	mat_consulta.push_back(get_feature(img_path, false));
 	string f_data = "/home/sormeno/data/ndata/features1_vgg.bin";
 	string bbox_data = "/home/sormeno/data/ndata/test_vgg_1.txt";
-	vector <int> r = get_similar(mat_consulta, f_data, bbox_data);
+	vector <int> r = get_similar(mat_consulta, f_data, bbox_data, false);
 	for (int i = 0; i < 100; i+=1){
 		cout << r.at(i) << endl;
 		cv::Mat image = cv ::imread("/home/sormeno/data/ndata/s/" + to_string(r.at(i)) + ".jpg");
@@ -377,7 +425,8 @@ void get_top_100_roi(string img_path){
 	}
 }
 
-double eval_map(string img_folder,string im_name, int num_images, int c_id, string work_path, int mode){
+
+double eval_map(string img_folder,string im_name, int num_images, int c_id, string work_path, int mode, bool is_binary){
 	vector <cv::Mat> mat_consultas;
 	for(int i = 1; i <= num_images; i += 1){
 		string str_image;
@@ -388,7 +437,7 @@ double eval_map(string img_folder,string im_name, int num_images, int c_id, stri
 			str_image = img_folder + im_name +"." +to_string(i) + ".src2.png";
 		}
 		cout << str_image << endl;
-        	cv::Mat mat_consulta = get_feature(str_image);
+        	cv::Mat mat_consulta = get_feature(str_image, is_binary);
 		mat_consultas.push_back(mat_consulta);
 	}
 	string gt_filename = "/home/sormeno/data/gt2.txt";
@@ -401,16 +450,21 @@ double eval_map(string img_folder,string im_name, int num_images, int c_id, stri
                 cout << "Trabajando en video " << id << endl;
                 string video_id = to_string(id);
 		string shots_img = work_path + "shots" + video_id + "/";
-                string f_data = work_path + "features_t9_" + video_id + ".bin";
-                string bbox_data = work_path + "bbox_t9_" + video_id + ".txt";
-                vector <int> r = get_similar(mat_consultas, f_data, bbox_data);
+                string bbox_data = work_path + "bbox_t11_" + video_id + ".txt";
+		string f_data;
+		if (is_binary){
+			f_data = work_path + "bfeatures_t11_12_" + video_id + ".bin";
+		}
+		else{
+			f_data = work_path + "features_t11_" + video_id + ".bin";
+		}
+                vector <int> r = get_similar(mat_consultas, f_data, bbox_data, is_binary);
                 vector <int> shots_id = get_shot_id(bbox_data);
 		int len_shots_id = shots_id.size();
                 int n_shots = shots_id.at(len_shots_id - 1);
                 vector <int> in_list(n_shots + 1, 0);
 		vector <int> f_roi_id;
                 vector <int> f_shot_id;
-		cout << "r " << r.size() << "id "<< len_shots_id<<endl;
                 for (int i = 0; i < len_shots_id; i += 1){
                         int id_element = shots_id.at(r.at(i));
                         if (in_list[id_element] == 0){
@@ -419,6 +473,7 @@ double eval_map(string img_folder,string im_name, int num_images, int c_id, stri
                                 in_list.at(id_element) = 1;
 			}
                 }
+		cout  << f_shot_id.size() << " ++++++++++++++++++++++++++++++++++++++ "<< endl;
 		vector <int> gt_list = gt(gt_filename, stoi(video_id), c_id);
 		vector <vector<double>> shots_info = get_shot_info(bbox_data);
 		if (gt_list.size() == 0){
@@ -450,22 +505,22 @@ double eval_map(string img_folder,string im_name, int num_images, int c_id, stri
 }
 
 
-void evaluacion(int mode){
+void evaluacion(int mode, bool is_binary){
 	vector<int> consultas;
-	int ids[] = {9070, 9076, 9086, 9101, 9103,  9112};
-	for(int i = 0; i < 6; i += 1){
-		consultas.push_back(ids[i]);
+	vector<int> ids = { 9070, 9076, 9086, 9101, 9103, 9112};
+	for(int i = 0; i < ids.size(); i += 1){
+		consultas.push_back(ids.at(i));
 	}
 	float f_result = 0;
 	float den = 0;
 	vector <float> parcial_result;
-	for (int i =0; i < consultas.size(); i += 1){
+	for (int i = 0; i < consultas.size(); i += 1){
 		string path = "/home/sormeno/data/queries/";
 		string im_name = to_string(consultas.at(i));
 		int num_img = 4;
 		int c_id = consultas.at(i);
 		string path_data = "/home/sormeno/data/ndata/";
-		float result_eval = eval_map(path, im_name ,num_img, c_id, path_data, mode);
+		float result_eval = eval_map(path, im_name ,num_img, c_id, path_data, mode, is_binary);
 		parcial_result.push_back(result_eval);
 		if (result_eval != 0){
 			f_result += result_eval;
@@ -480,6 +535,7 @@ void evaluacion(int mode){
 	cout <<"MAP final = "<< (f_result/den) << endl<<endl;
 	cout << "------------------------------------"<<endl;
 }
+
 
 void save_videos_roi(string path_shots,string  bbox_file, string path_out){
 	vector <vector<double>> shots_info = get_shot_info(bbox_file);
@@ -498,14 +554,14 @@ void save_videos_roi(string path_shots,string  bbox_file, string path_out){
 	}
 }
 
-int main(int argc, char* argv[]){
 
+int main(int argc, char* argv[]){
 	/*
-	for(int i = 10; i < 11; i += 1){
+	for(int i = 11; i < 12; i += 1){
 		string shots_data = "/home/sormeno/data/ndata/shots1/";
 		string bbox_data = "/home/sormeno/data/ndata/bbox_t" + to_string(i) + "_1.txt";
-		string out_p = "/home/sormeno/data/ndata/features_t" + to_string(i) + "_1.bin";
-		get_features(shots_data, bbox_data, out_p);
+		string out_p = "/home/sormeno/data/ndata/bfeatures_t" + to_string(i) + "_48_1.bin";
+		get_features(shots_data, bbox_data, out_p, true);
 	}
 	*/
 	/*
@@ -514,7 +570,7 @@ int main(int argc, char* argv[]){
         string data_out = "/home/sormeno/data/ndata/imagenet_features.bin";
         get_features_imagenet(dataset_shots, dataset_bbox, data_out);
 	*/
-	///*
+	/*
         if (argc != 6){
                 cout << "Llamar funcion con nombre de imagen , su identificador y carpeta de trabajo" << endl;
                 return 1;
@@ -525,8 +581,8 @@ int main(int argc, char* argv[]){
         int c_id = stoi(argv[4]);
         string path = argv[5];
         eval_map(im_folder, im_name ,num_images, c_id, path, 1);
-        //*/
-        //evaluacion(1);
+        */
+        evaluacion(1, true);
         //string im_name = argv[1];
         //get_top_100_roi(im_name);
 	//test_pca();
