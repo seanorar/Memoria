@@ -1,4 +1,5 @@
 import cv2
+from code_m import get_dataset_bbox
 
 list_names = ["all_souls", "ashmolean", "balliol", "bodleian", "christ_church", "cornmarket", "hertford", "keble", "magdalen", "pitt_rivers", "radcliffe_camera"]
 list_calification = ["good", "junk", "ok"]
@@ -47,3 +48,12 @@ def extract_queries(path_all_img, path_gt_files, output_dir):
                     im = cv2.imread(path_all_img + img_name + ".jpg")
                     roi = im[img_bbox[1]:img_bbox[3], img_bbox[0]:img_bbox[2]]
                     cv2.imwrite(output_dir + name + "_" + str(id) + "_query.jpg", roi)
+
+
+def extract_rois(path_imgs, txt_all_imgs, prototxt, caffemodel, mode):
+    list_image_names = []
+    with open(txt_all_imgs) as f:
+        lines = f.readlines()
+        for line in lines:
+            list_image_names.append(path_imgs + line.rstrip())
+    result = get_dataset_bbox(list_image_names, prototxt, caffemodel, mode)
