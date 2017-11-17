@@ -86,29 +86,17 @@ def parse_args():
 
 def get_all_bbox(imgs_names, net):
 
-    cfg.TEST.HAS_RPN = True  # Use RPN for proposals
-    #im = 128 * np.ones((300, 500, 3), dtype=np.uint8)
-    #for i in xrange(2):
-    #    _, _= im_detect(net, im)
+    cfg.TEST.HAS_RPN = True
     bbox_list = []
     for name in imgs_names:
         print name
         im = cv2.imread(name)
         bbox_result = bbox_detect(net, im)
         print "se detectaron: " + str(len(bbox_result))
-        min_area = 10000000
-        max_area = 0
-        for bbox in bbox_result:
-            area = (bbox[2]-bbox[0])*(bbox[3]-bbox[1])
-            if area < min_area:
-                min_area = area
-            if area > max_area:
-                max_area = area
         bbox_list.append(bbox_result)
     return bbox_list
 
 def extrac_roi(im, bbox):
-    print bbox
     return im[bbox[0]:bbox[2],bbox[1]:bbox[3]]
 
 def get_all_features(imgs_names, bboxs_list):

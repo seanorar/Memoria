@@ -6,6 +6,7 @@ from fast_rcnn.nms_wrapper import nms
 import matplotlib.pyplot as plt
 from random import shuffle
 
+
 def apply_nms(bbox_list, nms_thresh):
     fake_scores = []
     for i in range(0,len(bbox_list)):
@@ -14,6 +15,7 @@ def apply_nms(bbox_list, nms_thresh):
     keep = nms(np.hstack((bbox_list, fake_scores)), nms_thresh)
     result_bbox = bbox_list[keep, :]
     return result_bbox
+
 
 def bb_intersection_over_union(bbox1, bbox2):
     xA = max(bbox1[0], bbox2[0])
@@ -34,6 +36,7 @@ def bb_intersection_over_union(bbox1, bbox2):
             print "error" 
         return iou
 
+
 def get_bbox_from_txt(txt_path, img_id):
         with open(txt_path) as f:
             lines = f.readlines()
@@ -45,6 +48,7 @@ def get_bbox_from_txt(txt_path, img_id):
                     aux = [int(i) for i in split_data]
                     result.append([aux[3],aux[4],aux[1] + aux[3], aux[2] + aux[4]])
             return result
+
 
 def get_bbox_from_xml(xml_path, get_classes=False):
     tree = ET.parse(xml_path)
@@ -63,6 +67,7 @@ def get_bbox_from_xml(xml_path, get_classes=False):
     if (get_classes):
         return (gt_bbox, gt_classes)
     return gt_bbox
+
 
 def evaluate_iou(bboxs_gt, bboxs_predicted, iou_relevant=0.5):
     avg_iou = 0.0
@@ -84,6 +89,7 @@ def evaluate_iou(bboxs_gt, bboxs_predicted, iou_relevant=0.5):
         avg_iou = avg_iou + max_iou
     n_relevants = sum(check_relevant)
     return (float(avg_iou / len(bboxs_gt)), n_relevants, gt_finded_total)
+
 
 def get_dataset_iou(txt_data, path_imgs, path_bbox_data, prototxt, caffemodel, nms_iou=0.5, iou_relevant=0.5, mode="cpu"):
     with open(txt_data) as f:
@@ -123,6 +129,7 @@ def get_dataset_iou(txt_data, path_imgs, path_bbox_data, prototxt, caffemodel, n
         print "dataset recall = " + str(float(avg_recall / num_lines))
         return (float(avg_iou / num_lines),float(avg_precision / num_lines),float(avg_recall / num_lines))
 
+
 def show_best_roi(img, gt, predicted):
     best_rois = []
     iou_scores = []
@@ -145,6 +152,7 @@ def show_best_roi(img, gt, predicted):
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
+
 def sort_data_to_plot(x_data, y_data):
     list_tuples = []
     for i in range(0, len(x_data)):
@@ -152,6 +160,7 @@ def sort_data_to_plot(x_data, y_data):
     list_tuples = sorted(list_tuples, key=lambda x: x[0])
     new_data_x, new_data_y = map(list, zip(*list_tuples))
     return (new_data_x, new_data_y)
+
 
 def data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode="cpu", output="out"):
     r_iou = []
@@ -167,6 +176,7 @@ def data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode="c
     np.savez(output + "_presicion", r_presicion)
     np.savez(output + "_recall", r_recall)
 
+
 def plot_presicion_vs_recall(dataset, id):
     path = "/home/sebastian/Escritorio/universidad/memoria/py-faster-rcnn/tools/Memoria/calculados"
     trained = "imagenet"
@@ -174,6 +184,7 @@ def plot_presicion_vs_recall(dataset, id):
     trained = "pascal"
     p_iou, p_presicion, p_recall = load_data(path, dataset, trained, id)
     to_plot([i_recall, p_recall],[i_presicion, p_presicion],['imagenet', 'pascal'],'recall', 'presicion', "presicion vs recall en " +dataset)
+
 
 def plot_data_vs_trsh(dataset, id):
     path = "/home/sebastian/Escritorio/universidad/memoria/py-faster-rcnn/tools/Memoria/calculados"
@@ -186,11 +197,13 @@ def plot_data_vs_trsh(dataset, id):
     to_plot([x_val, x_val], [p_recall, i_recall], ['pascal', 'imagenet'], 'thr_iou', 'recall')
     to_plot([x_val, x_val], [p_presicion, i_presicion], ['pascal', 'imagenet'], 'thr_iou', 'presicion')
 
+
 def load_data(path, dataset, trained, id):
     iou = np.load(path + "/" + dataset + "_" + trained +"_"+str(id)+"_iou.npz")['arr_0']
     presicion = np.load(path + "/" + dataset + "_" + trained + "_"+str(id)+"_presicion.npz")['arr_0']
     recall = np.load(path + "/" + dataset + "_" + trained + "_" + str(id)+"_recall.npz")['arr_0']
     return (iou, presicion, recall)
+
 
 def to_plot(data_x,data_y, labels, axis_x, axis_y, title):
     for i in range(len(data_x)):
@@ -202,6 +215,7 @@ def to_plot(data_x,data_y, labels, axis_x, axis_y, title):
     plt.legend()
     plt.show()
 
+
 def create_mini_imagenet(path_val_imagenet):
     with open(path_val_imagenet+"val.txt") as f:
         lines = f.readlines()
@@ -211,6 +225,7 @@ def create_mini_imagenet(path_val_imagenet):
         for line in selected:
             f.write(line)
         f.close()
+
 
 def bbox_val_imagenet(path_val_imagenet, path_xmls, path_imgs):
     with open(path_val_imagenet + "val.txt") as f:

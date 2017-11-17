@@ -1,12 +1,14 @@
 import cv2
-import numpy as np
-from skimage import feature, io
+from skimage import feature
 import scipy
 from scipy.spatial import distance
+import xml.etree.ElementTree as ET
+
 
 def operate_dist_list1(list):
     total = sum(list)/len(list)
     return total
+
 
 def get_lbp_distance(lbp1, lbp2):
     result = []
@@ -14,10 +16,12 @@ def get_lbp_distance(lbp1, lbp2):
         result.append(distance.euclidean(lbp1[i],lbp2[i]))
     return result
 
+
 def complete_lbp(image):
     desc = feature.local_binary_pattern(image,24, 3,  method = "uniform")
     histogram = scipy.stats.itemfreq(desc)
     return [histogram[:,1]]
+
 
 def shot_detection(path_video, video_name, id_video, path_output):
     with open(path_output + 'output.shots', 'w') as file:
@@ -64,7 +68,8 @@ def get_shots_id(shots_file):
         id_shots.append((shot_fin, current_id))
         current_id += 1
     fo.close()
-    return id_shots
+    return id_shot
+
 
 def save_frames(video_path, list_id ,path_out):
     cap = cv2.VideoCapture(video_path)
@@ -82,13 +87,43 @@ def save_frames(video_path, list_id ,path_out):
             actual_index += 1
     cap.release()
 
+
+def get_video_id_relevant_gt(gt_file, path_output):
+    #obtiene los id y cantidad de shots relevantes que aparecen en el gt de trecvid
+    ids_videos = [0] * 300
+    with open(gt_file) as f:
+        lines = f.readlines()
+        for line in lines:
+            query_id, video_info = line.rstrip().split("\t")
+            video_name, shot_info = video_info.split("_")
+            video_id = video_name.split("shot")[1]
+            ids_videos[int(video_id)] += 1
+    final_result = []
+    for i in range (0, 250):
+            final_result.append((i, ids_videos[i]))
+    final_result.sort(key=lambda x:-x[1])
+    with open(path_output, 'w') as file:
+        for element in final_result:
+            if element[1]!=0:
+                file.write(str(element[0]) + " " + str(element[1]) + "\n")
+
+
 def get_shot_time(shot_number, shot_info_file):
     with open(shot_info_file) as f:
         lines = f.readlines()
         info_shot = lines[shot_number-1]
         split_str = info_shot.split(" ")
-	start_time = float(split_str[2].split("--start-time=")[1])
+        start_time = float(split_str[2].split("--start-time=")[1])
         end_time = float(split_str[3].split("--stop-time=")[1])
         return (start_time, end_time)
 
 
+def obtain_videoID_videName(xml_path):
+    dict_data={}
+    tree = ET.parse(xml_path)
+    root = tree.getroot()
+    for obj in root.iter('VideoFile'):
+        video_id  = obj.find('id').text
+        video_name = obj.find('filename').text
+        dict_data[video_id] = video_name
+    return dict_data

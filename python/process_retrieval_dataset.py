@@ -1,7 +1,16 @@
 import cv2
 from code_m import get_dataset_bbox
 
-def generate_gt_relevant(list_calification, path ,name, id):
+
+def check_images(txt, path_images):
+    with open(txt) as f:
+        lines = f.readlines()
+        for line in lines:
+            img = cv2.imread(path_images + line.rstrip())
+            if img is None:
+                print "error con " + path_images + line.rstrip()
+
+def generate_gt_relevant(list_calification, path, name, id):
     list_relevant = []
     for calification in list_calification:
         txt_data = path + name + "_" + str(id) + "_" + calification + ".txt"
@@ -44,6 +53,7 @@ def extract_queries(list_names, path_all_img, path_gt_files, output_dir ):
                     im = cv2.imread(path_all_img + img_name + ".jpg")
                     roi = im[img_bbox[1]:img_bbox[3], img_bbox[0]:img_bbox[2]]
                     cv2.imwrite(output_dir + name + "_" + str(id) + "_query.jpg", roi)
+
 
 def extract_rois(path_imgs, txt_all_imgs, prototxt, caffemodel, mode, output_dir):
     list_images_full_path = []

@@ -25,10 +25,10 @@ def evaluate_map(txt_data, path_to_bin, len_feature, comp_func):
                 ap = get_ap(list_classes[seek_counter], list_id)
                 map = map + ap
                 print seek_counter
-                print result
-                print list_id
-                print ap
+                #print result
+                #print list_id
                 seek_counter += 1
+                print map / seek_counter
                 bf.seek((seek_counter * len_feature) * 4, os.SEEK_SET)
             except:
                 break
@@ -83,6 +83,26 @@ def compare_features(feature, feature_id, list_classes, bin_data, dist):
     return result
 
 
+def compare_features_without_classes(feature, bin_data, dist):
+    compare_result = []
+    bf = open(bin_data, 'rb')
+    id_element = 0
+    len_feature = len(feature)
+    while True:
+        try:
+            data = array.array('f')
+            data.fromfile(bf, len_feature)
+            print feature
+            print data
+            print "-------------------------"
+            compare_result.append(dist(feature, data))
+            id_element += 1
+            bf.seek((id_element * len_feature) * 4, os.SEEK_SET)
+        except:
+            break
+    result = sorted(compare_result)
+    return result
+
 def compare_features2(feature, feature_id, list_classes, all_data, dist):
     compare_result = []
     for id_element in range(0, len(all_data)):
@@ -112,7 +132,11 @@ def get_ap(relevant_id, list_id):
             ap = ap + (n_relevants / (i + 1.0))
     return (ap / n_relevants)
 
+#txt_data = "/home/sebastian/Escritorio/datos_recibidos/val_pascal.txt"
+#path_to_bin = "/home/sebastian/Escritorio/datos_recibidos/pascal_4096_result.bin"
 
-txt_data = "/home/sebastian/Escritorio/val_1.txt"
-path_to_bin = "/home/sebastian/Escritorio/alex_hfc8_ft_result.bin"
-evaluate_map(txt_data, path_to_bin, 48, euclidean)
+#txt_data = "/home/sebastian/Escritorio/datos_recibidos/val_imnet.txt"
+#path_to_bin = "/home/sebastian/Escritorio/datos_recibidos/imnet_4096_result.bin"
+
+#evaluate_map(txt_data, path_to_bin, 4096, euclidean)
+#print 1

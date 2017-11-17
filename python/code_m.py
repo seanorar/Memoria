@@ -8,6 +8,7 @@ import numpy as np
 import math
 from PIL import Image
 import caffe
+from process_dsh import compare_features_without_classes
 
 #obtiene todos los frames de un video
 def list_frames(video_name, fps, folder, min_limit = -1):
@@ -101,6 +102,20 @@ def init_net(prototxt, caffemodel, mode="cpu"):
     return net
 
 
+def extract_feature(net, layer_name,img_size, img):
+
+    transformer = caffe.io.Transformer({'data': net.blobs['data'].data.shape})
+    transformer.set_transpose('data', (2,0,1))
+    transformer.set_raw_scale('data', 255.0)
+
+    net.blobs['data'].reshape(1,3,img_size,img_size)
+
+    net.blobs['data'].data[...] = transformer.preprocess('data', img)
+    output = net.forward()
+
+    print net.blobs[layer_name].data[0]
+
+
 #calcula los bbox
 def save_bbox(path,inicio,fin, path_prototxt, path_caffemodel, out, mode="cpu"):
     images = []
@@ -134,6 +149,41 @@ def vis_img_bbox(img_path, prototxt, caffemodel,mode ="cpu"):
     num_rois = len(rois)
     num_rows = int(math.ceil(num_rois/4))
     make_grid(rois, 5, num_rows)
+
+
+def vis_nearest_rois(img_path,prototxt, caffemodel, data_path ,mode ="cpu"):
+    img = cv2.imread(img_path)
+    net = init_net(prototxt, caffemodel, mode)
+    calculated_features = data_path + "/features.bin"
+    bbox_data = data_path + "/bbox_data.txt"
+    img_feature = extract_feature(net, "hfc8_f", 224, img)
+    comp_result= get_similar_rois(img_feature, calculated_features, bbox_data)
+    rois = []
+    for image_name, bbox, dist_val in comp_result:
+        full_image_name = data_path + "/shots/" + image_name + ".jpg"
+        img = cv2.imread(full_image_name)
+        roi = img[int(bbox[1]):int(bbox[3]), int(bbox[0]):int(bbox[2])]
+        rois.append(roi)
+    num_rois = len(rois)
+    num_rows = int(math.ceil(num_rois/4))
+    make_grid(rois, 5, num_rows)
+
+def get_similar_rois(img_feature, calculated_features_path, bbox_data_txt, ):
+    dist_function = scipy.spatial.distance.euclidean
+    list_dist = compare_features_without_classes(img_feature, calculated_features_path, dist_function)
+    result = []
+    with open(bbox_data_txt) as f:
+        lines = f.readlines()
+        for i in range(0, len(lines)):
+            line = lines[i]
+            dist = list_dist[i]
+            sep_line = line.rstrip().split(" ")
+            img_name = sep_line[5]
+            img_bbox = [sep_line[0], sep_line[1], sep_line[2], sep_line[3]]
+            result.append((img_name, img_bbox, dist))
+        sorted(result, key=lambda x: x[2])
+        print result
+        return result
 
 
 def test_f():
@@ -279,6 +329,7 @@ def compare_roi(img_test, data):
         #cv2.imwrite("prueba_rois/r_"+str(k)+".jpg", im_aux2[aux_bbox[0]:aux_bbox[2],aux_bbox[1]:aux_bbox[3]])
 
 #5, mucho
+
 def make_grid(img_list,size_x, size_y):
     new_im = Image.new('RGB', (200 * size_x, 200 * size_y))
     index = 0
@@ -322,3 +373,5 @@ def test_dist(feature):
         print result[i][1]
         to_show.append(cv2.imread(result[i][1]))
     make_grid(to_show, size, size)
+
+
