@@ -127,3 +127,12 @@ def obtain_videoID_videName(xml_path):
         video_name = obj.find('filename').text
         dict_data[video_id] = video_name
     return dict_data
+
+
+def get_shots_from_videos(txt_gt_videos, xml_path, video_path):
+    with open(txt_gt_videos) as f:
+        lines = f.readlines()
+        dict_data = obtain_videoID_videName(xml_path)
+        for line in lines:
+            video_id = line.rstrip()
+            print dict_data[video_id]
