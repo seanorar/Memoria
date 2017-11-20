@@ -4,6 +4,7 @@ import scipy
 from scipy.spatial import distance
 import xml.etree.ElementTree as ET
 import os
+from code_m import save_bbox
 
 def operate_dist_list1(list):
     total = sum(list)/len(list)
@@ -152,6 +153,13 @@ def get_shots_from_videos(txt_gt_videos, xml_path, path_videos, path_outh, txt_a
             video_path = path_videos + dict_data[video_id]
             save_frames(video_path, list_id , result_path)
 
-
-get_shots_from_videos("/home/sormeno/Datasets/Trecvid/orden_videos.txt", "/home/sormeno/Datasets/Trecvid/shots/eastenders.collection.xml", "/home/sormeno/Datasets/Trecvid/videos/", "/home/sormeno/test/", "/home/sormeno/Datasets/Trecvid/shots/shots.txt")
-
+def get_bbox_from_videos(txt_video_orden, path_imgs, prototxt, caffemodel):
+    with open(txt_video_orden) as f:
+        lines = f.readlines()
+        for line in lines:
+            video_id = line.rstrip().split(" ")[0]
+            img_folder = path_imgs + video_id + "/"
+            txt_all_img = img_folder + video_id + ".txt"
+            num_imgs = len(open(txt_all_img).readlines()) - 1
+            print num_imgs
+            save_bbox(img_folder, 0, num_imgs, prototxt, caffemodel, img_folder, "gpu")
