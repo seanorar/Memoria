@@ -72,3 +72,4 @@ def extract_rois(path_imgs, txt_all_imgs, prototxt, caffemodel, mode, output_dir
                        + " " + str(int(bbox[3])) + " " + list_image_names[i] + "\n"
             write_file.write(to_write)
     write_file.close()
+

@@ -3,7 +3,7 @@ from skimage import feature
 import scipy
 from scipy.spatial import distance
 import xml.etree.ElementTree as ET
-
+import os
 
 def operate_dist_list1(list):
     total = sum(list)/len(list)
@@ -68,7 +68,7 @@ def get_shots_id(shots_file):
         id_shots.append((shot_fin, current_id))
         current_id += 1
     fo.close()
-    return id_shot
+    return id_shots
 
 
 def save_frames(video_path, list_id ,path_out):
@@ -128,11 +128,30 @@ def obtain_videoID_videName(xml_path):
         dict_data[video_id] = video_name
     return dict_data
 
+def obtain_shots_txt(id_video, txt_all_shots, path_outh):
+    with open(txt_all_shots) as f:
+        lines = f.readlines()
+        output_file = open(path_outh + id_video + ".txt", "w")
+        for line in lines:
+            shot_info = line.rstrip()
+            if (("shot"+id_video) == shot_info.split("_")[0]):
+                output_file.write(shot_info + "\n")
 
-def get_shots_from_videos(txt_gt_videos, xml_path, video_path):
+
+def get_shots_from_videos(txt_gt_videos, xml_path, path_videos, path_outh, txt_all_shots):
     with open(txt_gt_videos) as f:
         lines = f.readlines()
         dict_data = obtain_videoID_videName(xml_path)
         for line in lines:
-            video_id = line.rstrip()
-            print dict_data[video_id]
+            video_id = line.rstrip().split(" ")[0]
+            print video_id
+            result_path = path_outh + video_id + "/" 
+            os.mkdir(result_path)
+            obtain_shots_txt(video_id, txt_all_shots, result_path)
+            list_id = get_shots_id(result_path + video_id + ".txt")
+            video_path = path_videos + dict_data[video_id]
+            save_frames(video_path, list_id , result_path)
+
+
+get_shots_from_videos("/home/sormeno/Datasets/Trecvid/orden_videos.txt", "/home/sormeno/Datasets/Trecvid/shots/eastenders.collection.xml", "/home/sormeno/Datasets/Trecvid/videos/", "/home/sormeno/test/", "/home/sormeno/Datasets/Trecvid/shots/shots.txt")
+
