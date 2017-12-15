@@ -64,6 +64,21 @@ def load_all_features(bin_data, len_feature):
             break
     return result
 
+def load_n_features(bin_data, len_feature, n):
+    result = []
+    bf = open(bin_data, 'rb')
+    id_element = 0
+    while True:
+        for i in range(0,n):
+            try:
+                data = array.array('f')
+                data.fromfile(bf, len_feature)
+                result.append(data)
+                id_element += 1
+                bf.seek((id_element * len_feature) * 4, os.SEEK_SET)
+            except:
+                break
+    return result
 
 def compare_features(feature, feature_id, list_classes, bin_data, dist):
     compare_result = []
