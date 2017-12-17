@@ -288,51 +288,49 @@ cv::Mat feature_sign(cv::Mat feature){
 } 
 
 
-vector <int> get_similar(vector <cv::Mat> mat_consultas, string feature_data, string bbox_data, bool is_binary){
+vector <pair<double,string>> get_similar(vector <cv::Mat> mat_consultas, string feature_data, string bbox_data, bool is_binary){
         //función que a partir de un descriptor, entrega una lista de los elementos semejantes ordenados desde el más cercano
-        int feature_len = mat_consultas.at(0).cols;
+	int feature_len = mat_consultas.at(0).cols;
 	cout << " tamaño descriptor " <<feature_len << endl;
 	vector <pair<double, string>> dist_list;
-        float result [feature_len];
+	float result [feature_len];
 	cout << feature_data << endl;
-        ifstream readFile (feature_data, ios::in | ios::binary);
-        ifstream file(bbox_data);
-        string str;
-	long limit = num_lines(bbox_data);
-        for(int i = 0; i < limit; i += 1){
-		getline(file, str);
-                double buffer[6];
-                proces_line(str, buffer);
-                string im_name = to_string(i);
-                readFile.read ((char*)result, sizeof(float) * feature_len);
-                cv::Mat mat_im = cv::Mat(1, feature_len, CV_32F, result);
-		int n_vectores = mat_consultas.size();
-		for(int k = 0; k < n_vectores; k += 1){
-			cv::Mat mat_consulta = mat_consultas.at(k);
-			double dist = 0;
-			if (is_binary){
-				
-				//dist = cv::norm(mat_consulta, mat_im);
-				dist = hammming_distance(feature_sign(mat_consulta), feature_sign(mat_im));
+	ifstream readFile (feature_data, ios::in | ios::binary);
+	ifstream file(bbox_data);
+    string str;
+    long limit = num_lines(bbox_data);
+    for(int i = 0; i < limit; i += 1){
+    	getline(file, str);
+    	double buffer[6];
+    	proces_line(str, buffer);
+    	string im_name = to_string(i);
+    	readFile.read ((char*)result, sizeof(float) * feature_len);
+    	cv::Mat mat_im = cv::Mat(1, feature_len, CV_32F, result);
+    	int n_vectores = mat_consultas.size();
+    	double min_dist = 1000000000;
+    	for(int k = 0; k < n_vectores; k += 1){
+    		cv::Mat mat_consulta = mat_consultas.at(k);
+    		double dist = 0;
+    		if (is_binary){
+    			//dist = cv::norm(mat_consulta, mat_im);
+    			dist = hammming_distance(feature_sign(mat_consulta), feature_sign(mat_im));
 			}
 			else{
 				dist = cv::norm(mat_consulta, mat_im);
 			}
-			dist_list.push_back(make_pair(dist ,im_name));
+			if (dist < min_dist){
+				min_dist = dist;
+			}
 		}
-        }
-        file.close();
-        readFile.close();
-        sort(dist_list.begin(), dist_list.end());
+		dist_list.push_back(make_pair(min_dist , im_name));
+	}
+	file.close();
+	readFile.close();
+	sort(dist_list.begin(), dist_list.end());
 	for (int p = 0 ; p < 100; p += 1){
 		cout << dist_list.at(p).first << endl;
 	}
-	vector<int> final_result;
-	int n_dist = dist_list.size();
-        for(int i = 0; i < n_dist; i += 1){
-                final_result.push_back(stoi(dist_list.at(i).second));
-	} 
-	return final_result;
+	return dist_list;
 }
 
 
@@ -396,7 +394,12 @@ void save_result_im(vector <int> f_roi_id, vector <vector< double >> shots_info,
 void get_top_100_roi(string img_path, bool is_boolean, string f_data, string bbox_data, string imgs_path, string output_path){
 	vector <cv::Mat> mat_consulta;
 	mat_consulta.push_back(get_feature(img_path, is_boolean));
-	vector <int> r = get_similar(mat_consulta, f_data, bbox_data, is_boolean);
+	vector<int> r;
+	vector <pair<double, string>> dist_list= get_similar(mat_consulta, f_data, bbox_data, is_boolean);
+	int n_dist = dist_list.size();
+	for(int i = 0; i < n_dist; i += 1){
+		r.push_back(stoi(dist_list.at(i).second));
+	}
 	vector <vector<double>> shots_data = get_shot_info(bbox_data);
 	for (int i = 0; i < 100; i+=1){
 		//cout << r.at(i) << endl;
@@ -440,7 +443,12 @@ double eval_map(string img_folder,string im_name, int num_images, int c_id, stri
 		else{
 			f_data = work_path + "fpca_2000_t11_1.bin";//"features_t11_" + video_id + ".bin";
 		}
-                vector <int> r = get_similar(mat_consultas, f_data, bbox_data, is_binary);
+		vector<int> r;
+		vector <pair<double, string>> dist_list = get_similar(mat_consulta, f_data, bbox_data, is_boolean);
+		int n_dist = dist_list.size();
+		for(int i = 0; i < n_dist; i += 1){
+			r.push_back(stoi(dist_list.at(i).second));
+		}
                 vector <int> shots_id = get_shot_id(bbox_data);
 		int len_shots_id = shots_id.size();
                 int n_shots = shots_id.at(len_shots_id - 1);
@@ -566,6 +574,65 @@ void convert_data_pca(string feature_data, int feature_len_in, int feature_len_o
         writeFile.close();
 }
 
+double eval_map_trecvid(string img_folder,string im_name, int num_images, int c_id, string work_path, int mode, bool is_binary){
+	vector <cv::Mat> mat_consultas;
+	for(int i = 1; i <= 1; i += 1){
+		string str_image;
+		if (mode==1){
+			str_image = img_folder + im_name + "." + to_string(num_images) + ".src.png";
+		}
+		else{
+			str_image = img_folder + im_name + "." + to_string(num_images) + ".src2.png";
+		}
+		cout << str_image << endl;
+		cv::Mat mat_consulta = get_feature(str_image, is_binary);
+		mat_consultas.push_back(mat_consulta);
+	}
+	string gt_filename = "/home/sormeno/data/gt2.txt";
+	float final_map = 0;
+	cout << "---------------- " << endl;
+	int denominador = 0;
+	//crear heap
+	int in_heap=0;
+	for (int id = 1; id < 2; id += 1){
+		cout << "Trabajando en video " << id << endl;
+		string video_id = to_string(id);
+		string shots_img = work_path + "shots" + video_id + "/";
+		string bbox_data = work_path + "bbox_t11_" + video_id + ".txt";
+		string f_data;
+		if (is_binary){
+			f_data = work_path + "bfeatures_t11_128_normed_" + video_id  + ".bin";
+		}
+		else{
+			f_data = work_path + "fpca_2000_t11_1.bin";//"features_t11_" + video_id + ".bin";
+		}
+		vector <pair<double, string>> dist_list = get_similar(mat_consulta, f_data, bbox_data, is_boolean);
+		vector <int> shots_id = get_shot_id(bbox_data);
+		//vector <int> gt_list = gt(gt_filename, stoi(video_id), c_id);
+		vector <pair <double, string >> min_elements;
+		for (int i = 0; i < 1000; i += 1){
+			double dist = 0;
+			string shot_info = "";
+			min_elements.push_back(make_pair(dist , shot_info));
+		}
+		if (in_heap == 0){
+			//agrego los 1000 primeros
+			in_heap = 1000;
+		}
+		else{
+			int i = 0;
+			double dist_last_element = 0 ;
+			while ((i < 1000) && (dist_last_element < min_elements.at(i).first)){
+				//saco el ultimo
+				//inserto el nuevo
+				i+=1;
+			}
+		}
+	}
+	//evaluar gt de los 10000 mas cercanos
+	//retornar map
+	return 1.0;
+}
 
 int main(int argc, char* argv[]){
 	/*
