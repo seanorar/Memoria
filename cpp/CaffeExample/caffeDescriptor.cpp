@@ -444,7 +444,7 @@ double eval_map(string img_folder,string im_name, int num_images, int c_id, stri
 			f_data = work_path + "fpca_2000_t11_1.bin";//"features_t11_" + video_id + ".bin";
 		}
 		vector<int> r;
-		vector <pair<double, string>> dist_list = get_similar(mat_consulta, f_data, bbox_data, is_boolean);
+		vector <pair<double, string>> dist_list = get_similar(mat_consultas, f_data, bbox_data, is_binary);
 		int n_dist = dist_list.size();
 		for(int i = 0; i < n_dist; i += 1){
 			r.push_back(stoi(dist_list.at(i).second));
@@ -606,7 +606,7 @@ double eval_map_trecvid(string img_folder,string im_name, int num_images, int c_
 		else{
 			f_data = work_path + "fpca_2000_t11_1.bin";//"features_t11_" + video_id + ".bin";
 		}
-		vector <pair<double, string>> dist_list = get_similar(mat_consulta, f_data, bbox_data, is_boolean);
+		vector <pair<double, string>> dist_list = get_similar(mat_consultas, f_data, bbox_data, is_binary);
 		vector <int> shots_id = get_shot_id(bbox_data);
 		//vector <int> gt_list = gt(gt_filename, stoi(video_id), c_id);
 		vector <pair <double, string >> min_elements;
