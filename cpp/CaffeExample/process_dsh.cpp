@@ -105,13 +105,13 @@ int main(int argc, char* argv[]){
 	//string imgs_path_folder = "/home/sormeno/Datasets/VOC/val/val/";
 	//string imgs_txt = "/home/sormeno/Datasets/VOC/val/val.txt";
 	
-	//string imgs_path_folder = "/home/sormeno/Datasets/imagenet/val/objects/";
-        //string imgs_txt = "/home/sormeno/Datasets/imagenet/val/output_2.txt";
+	string imgs_path_folder = "/home/sormeno/Datasets/imagenet/train/objects/";
+        string imgs_txt = "/home/sormeno/Datasets/imagenet/train/output_2.txt";
 
-	//string data_out = "/home/sormeno/imnet_4096_result.bin";
-	//get_features(imgs_path_folder, imgs_txt, data_out, 1);
+	string data_out = "/home/sormeno/data/ndata/imnet_train_4096.bin";
+	get_features(imgs_path_folder, imgs_txt, data_out, 1);
 
-	get_feature("/home/sormeno/Datasets/Pascal/Images/005349.jpg", 0);
+	//get_feature("/home/sormeno/Datasets/Pascal/Images/005349.jpg", 0);
 	//get_feature("/home/sormeno/Datasets/Pascal/Images/003008.jpg", 0);
 }
 

@@ -216,6 +216,19 @@ vector <string> get_relevant(string txt_gt){
 	return result;
 }
 
+
+void check_imgs(string path_imgs, string txt_data){
+        ifstream file(txt_data);
+        string str;
+        while (getline(file, str)){
+		cv::Mat aux_image = cv :: imread(path_imgs + str);
+		if (aux_image.cols ==0){
+			cout << str << endl;
+		}
+        }
+}
+
+
 bool is_relevant(string name, vector <string> relevant_list){
 	return find(relevant_list.begin(), relevant_list.end(), name) != relevant_list.end();
 }
@@ -241,7 +254,7 @@ float eval_dataset_map(vector <string> names, string path_queries, string path_g
 	float map = 0;
 	float num_elem = 0;
 	for (int i = 0; i < names.size(); i += 1){
-		for (int j = 1; j < 3; j += 1){
+		for (int j = 1; j < 6; j += 1){
 			string query = path_queries + names.at(i) + "_" + to_string(j) + "_query.jpg";
 			string gt = path_gt + "gt_" + names.at(i) + "_"  +to_string(j) + ".txt";
 			
@@ -273,9 +286,8 @@ void extract_features_Paris(string prototxt, string caffemodel, int img_size, st
 
 
 float eval_Oxford(string prototxt, string caffemodel, int img_size, string layer_name, string data_bin, bool normed){
-        string list_names [] = {"all_souls"};
-//, "ashmolean", "balliol", "bodleian", "christ_church", "cornmarket",
-//                                "hertford", "keble", "magdalen", "pitt_rivers", "radcliffe_camera"};
+        string list_names [] = {"all_souls", "ashmolean", "balliol", "bodleian", "christ_church", "cornmarket",
+                                "hertford", "keble", "magdalen", "pitt_rivers", "radcliffe_camera"};
         
 	vector <string> v (list_names, list_names + sizeof list_names / sizeof list_names[0]);
         string imgs_folder = "/home/sormeno/Datasets/Oxford/imgs/";
@@ -302,24 +314,23 @@ float eval_Paris(string prototxt, string caffemodel, int img_size, string layer_
 
 int main(int argc, char* argv[]){
         //*
-        string prototxt = "/home/sormeno/Models/Alexnet/bvlc_alexnet_memory.prototxt";
-        string caffemodel = "/home/sormeno/Models/Alexnet/bvlc_alexnet.caffemodel";
-        int img_size = 256;
-        string layer_name = "fc7";
-        string data_bin1 = "/home/sormeno/data/ndata/paris_4096.bin";
-	string data_bin2 = "/home/sormeno/data/ndata/oxford_4096.bin";
-        bool normed = true;
+        string prototxt = "/home/sormeno/Models/Alexnet-DSH/alex_hfc8_1024.prototxt";
+        string caffemodel = "/home/sormeno/Models/Alexnet-DSH/alex_hfc8_1024_nc.caffemodel";
+        int img_size = 224;
+        string layer_name = "hfc8";
+        string data_bin1 = "/home/sormeno/data/ndata/paris_1024.bin";
+	string data_bin2 = "/home/sormeno/data/ndata/oxford_1024.bin";
+        bool normed = false;
 	
-	//extract_features_Paris(prototxt, caffemodel, img_size, layer_name, data_bin1, normed);
-	//extract_features_Oxford(prototxt, caffemodel, img_size, layer_name, data_bin2, normed);
+	extract_features_Paris(prototxt, caffemodel, img_size, layer_name, data_bin1, normed);
+	extract_features_Oxford(prototxt, caffemodel, img_size, layer_name, data_bin2, normed);
 
-	//float r1 = eval_Paris(prototxt, caffemodel, img_size,layer_name, data_bin1, normed);	
-
+	float r1 = eval_Paris(prototxt, caffemodel, img_size,layer_name, data_bin1, normed);	
 	float r2 = eval_Oxford(prototxt, caffemodel, img_size,layer_name, data_bin2, normed);
 	
-	//cout << "paris " << r1 << endl;
+	cout << "paris " << r1 << endl;
 	cout << "oxford " << r2 << endl;
-        //get_features_dataset(prototxt, caffemodel, img_size, layer_name, imgs_folder, bbox_txt, data_out, normed);
+
         //*/
         return 0;
 }
