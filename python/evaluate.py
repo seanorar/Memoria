@@ -194,8 +194,8 @@ def plot_data_vs_trsh(dataset, id):
     p_iou, p_presicion, p_recall = load_data(path, dataset, trained, id)
     x_val = [i / 100.0 for i in range(5,100,5)]
 
-    to_plot([x_val, x_val], [p_recall, i_recall], ['pascal', 'imagenet'], 'thr_iou', 'recall')
-    to_plot([x_val, x_val], [p_presicion, i_presicion], ['pascal', 'imagenet'], 'thr_iou', 'presicion')
+    to_plot([x_val, x_val], [p_recall, i_recall], ['pascal', 'imagenet'], 'thr_iou', 'recall', "Variacion recall en " + dataset)
+    to_plot([x_val, x_val], [p_presicion, i_presicion], ['pascal', 'imagenet'], 'thr_iou', 'presicion', "Variacion presicion en " + dataset)
 
 
 def load_data(path, dataset, trained, id):
@@ -205,13 +205,38 @@ def load_data(path, dataset, trained, id):
     return (iou, presicion, recall)
 
 
+def plot_pca_evolution():
+    x = [1,2,3,4,5,6,7,8,9,10,11,12]
+    obj4 = [0.00883692, 0.00651609, 0.0172129, 0.0229793, 0.11, 0.18197, 0.200522, 0.171355, 0.206803, 0.175619, 0.197121, 0.196426]
+    obj1 = [0.018042, 0.0130235, 0.0265138, 0.0972047, 0.231526, 0.299594, 0.287851, 0.286413, 0.277041, 0.279485, 0.283419, 0.275661]
+    obj5 = [0.0110082, 0.00670436, 0.0139472, 0.308673, 0.45524, 0.759859, 0.806162, 0.808848, 0.79134, 0.790885, 0.751334, 0.734012]
+    obj2 = [0.00886471, 0.0136486, 0.0863969, 0.213382, 0.472477, 0.519718, 0.553845, 0.549711, 0.553203, 0.572478, 0.588356, 0.593926]
+    obj3 = [0.0113546, 0.0083661, 0.0139098, 0.0285699, 0.0411208, 0.052026, 0.0709322, 0.0722278, 0.0748704, 0.108918, 0.110862, 0.113706]
+    obj6 = [0.00838178, 0.0678976, 0.522621, 0.925769, 0.942025, 0.943789, 0.943952, 0.945374, 0.947401, 0.948489, 0.950158, 0.954167]
+    all_data_y = [obj1, obj2, obj3, obj4, obj5, obj6]
+    all_data_x = [x,x,x,x,x,x,x]
+    labels = ["obj1","obj2","obj3","obj4","obj5","obj6", "MAP promedio"]
+    data_prom = []
+    for i in range(0, 12):
+        val = 0
+        for j in range(0, 6):
+            val += all_data_y[j][i]
+        val = val/6
+        data_prom.append(val)
+    all_data_y.append(data_prom)
+    for element in all_data_y:
+        print element[8]
+    to_plot(all_data_x, all_data_y, labels, "largo de descriptor", "MAP", "Evolucion PCA")
+
 def to_plot(data_x,data_y, labels, axis_x, axis_y, title):
     for i in range(len(data_x)):
         x, y = sort_data_to_plot(data_x[i], data_y[i])
         plt.plot(x, y, label=labels[i])
     plt.ylabel(axis_y)
     plt.xlabel(axis_x)
+    #plt.xticks([1,2,3,4,5,6,7,8,9,10,11,12], [2,4,8,16,32,64,128,256,512,1024,2048,4096,1])
     plt.title(title)
+    plt.grid()
     plt.legend()
     plt.show()
 
@@ -244,3 +269,10 @@ def bbox_val_imagenet(path_val_imagenet, path_xmls, path_imgs):
                     newline = name + " " + str(bbox[0]) + " " + str(bbox[1]) + " " + str(bbox[2]) + " " + str(bbox[3]) + "\n"
                     f.write(newline)
         f.close()
+
+def evolicion_map():
+    data = [0.24, 0.29, 0.39,0.42, 0.41, 0.37,0.38,0.35,0.43,0.44,0.47]
+    data_y = [data]
+    data_x = [range(1,12)]
+    label=["MAP promedio"]
+    to_plot(data_x, data_y, label, "ID prueba", "MAP", "Evolucion MAP en pruebas realizadas")
