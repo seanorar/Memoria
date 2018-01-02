@@ -160,6 +160,6 @@ def get_bbox_from_videos(txt_video_orden, path_imgs, prototxt, caffemodel):
             video_id = line.rstrip().split(" ")[0]
             img_folder = path_imgs + video_id + "/"
             txt_all_img = img_folder + video_id + ".txt"
-            num_imgs = len(open(txt_all_img).readlines()) - 1
+            num_imgs = len(open(txt_all_img).readlines()) * 3
             print num_imgs
-            save_bbox(img_folder, 0, num_imgs, prototxt, caffemodel, img_folder, "gpu")
+            save_bbox(img_folder, 0, num_imgs - 1, prototxt, caffemodel, img_folder, "gpu")

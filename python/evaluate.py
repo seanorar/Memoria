@@ -91,7 +91,7 @@ def evaluate_iou(bboxs_gt, bboxs_predicted, iou_relevant=0.5):
     return (float(avg_iou / len(bboxs_gt)), n_relevants, gt_finded_total)
 
 
-def get_dataset_iou(txt_data, path_imgs, path_bbox_data, prototxt, caffemodel, nms_iou=0.5, iou_relevant=0.5, mode="cpu"):
+def get_dataset_iou(txt_data, path_imgs, path_bbox_data, prototxt, caffemodel, img_ext , nms_iou=0.5, iou_relevant=0.5, mode="cpu"):
     with open(txt_data) as f:
         lines = f.readlines()
         avg_iou = 0.0
@@ -99,10 +99,11 @@ def get_dataset_iou(txt_data, path_imgs, path_bbox_data, prototxt, caffemodel, n
         avg_recall = 0.0
         num_lines = 0
         net = init_net(prototxt, caffemodel, mode)
-        for line in lines:
+        for id in range(0,min(600, len(lines))):
+            line = lines[id]
             line = line.rstrip()
             img_id = line.split(" ")[0]
-            path_img = path_imgs + img_id + ".jpg"
+            path_img = path_imgs + img_id + img_ext
             if ".txt" in path_bbox_data:
                 bboxs_gt = get_bbox_from_txt(path_bbox_data, img_id)
             else:
@@ -110,15 +111,19 @@ def get_dataset_iou(txt_data, path_imgs, path_bbox_data, prototxt, caffemodel, n
                 bboxs_gt = get_bbox_from_xml(path_xml)
             if (len(bboxs_gt) > 0):
                 bboxs_predicted = get_img_bbox2(path_img, net)
+		print "iou relevante = " + str(iou_relevant)
+		print "nms iou = " + str(nms_iou)
                 print "rois detectados: " + str(len(bboxs_predicted))
                 filtered_bboxs = apply_nms(bboxs_predicted, nms_iou)
                 print "rois despues del filtro: " + str(len(filtered_bboxs))
                 iou, n_relevant, gt_finded = evaluate_iou(bboxs_gt, filtered_bboxs, iou_relevant)
-                precision = float(n_relevant / len(filtered_bboxs))
+		precision = float(gt_finded/ (len(filtered_bboxs) - n_relevant + gt_finded))
+                print gt_finded
+                print (len(filtered_bboxs) - n_relevant)
                 recall = float(gt_finded / len(bboxs_gt))
                 #print "max iou = " + str(iou)
                 print "precision = " + str(precision)
-                print str(gt_finded)+ " / " + str(len(bboxs_gt))
+                #print str(gt_finded)+ " / " + str(len(bboxs_gt))
                 print "recall = " + str (recall)
                 num_lines += 1
                 avg_iou += iou
@@ -128,7 +133,6 @@ def get_dataset_iou(txt_data, path_imgs, path_bbox_data, prototxt, caffemodel, n
         print "dataset map = " + str(float(avg_precision / num_lines))
         print "dataset recall = " + str(float(avg_recall / num_lines))
         return (float(avg_iou / num_lines),float(avg_precision / num_lines),float(avg_recall / num_lines))
-
 
 def show_best_roi(img, gt, predicted):
     best_rois = []
@@ -162,13 +166,13 @@ def sort_data_to_plot(x_data, y_data):
     return (new_data_x, new_data_y)
 
 
-def data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, mode="cpu", output="out"):
+def data_to_graphs(txt_data, path_imgs, path_xmls, prototxt, caffemodel, img_ext , mode="cpu", output="out"):
     r_iou = []
     r_presicion = []
     r_recall = []
     for i in range(5, 100 , 5):
         iou = float(i/100.0)
-        r = get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, iou, 0.5, mode)
+        r = get_dataset_iou(txt_data, path_imgs, path_xmls, prototxt, caffemodel, img_ext, 0.5, iou, mode) #nms_iou, iou_relevant
         r_iou.append(r[0])
         r_presicion.append(r[1])
         r_recall.append(r[2])
@@ -270,9 +274,28 @@ def bbox_val_imagenet(path_val_imagenet, path_xmls, path_imgs):
                     f.write(newline)
         f.close()
 
-def evolicion_map():
+def evolucion_map():
     data = [0.24, 0.29, 0.39,0.42, 0.41, 0.37,0.38,0.35,0.43,0.44,0.47]
     data_y = [data]
     data_x = [range(1,12)]
     label=["MAP promedio"]
     to_plot(data_x, data_y, label, "ID prueba", "MAP", "Evolucion MAP en pruebas realizadas")
+
+def barra():
+    x = np.arange(30)
+    money = [0.0802002, 0.337806, 0.0102041, 0.253691, 0.0872828, 0, 0.00131579, 0.22747, 0, 0.394273, 0.299594, 0.223268, 0.215824, 0, 0.162621, 0.107558, 0, 0.451023, 0, 0.0221769, 0.0199107, 0.10084, 0.261753, 0.0666667, 0.0158555, 0.243871, 0.0827959, 0, 0.267557, 0.00555556]
+    #def millions(x, pos):
+    #    'The two args are the value and tick position'
+    #    return '$%1.1fM' % (x * 1e-6)
+
+    #formatter = FuncFormatter(millions)
+
+    fig, ax = plt.subplots()
+    plt.grid()
+    #ax.yaxis.set_major_formatter(formatter)
+    plt.bar(x, money)
+    plt.title("Map Consultas")
+    plt.ylabel("MAP")
+    plt.xlabel("ID consultas")
+    #plt.xticks(x, range(9069,9098))
+    plt.show()
