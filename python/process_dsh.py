@@ -2,7 +2,8 @@ import array
 import os
 from scipy.spatial.distance import hamming, euclidean
 import numpy as np
-
+from sklearn.decomposition import PCA
+import cPickle
 
 def evaluate_map(txt_data, path_to_bin, len_feature, comp_func):
     with open(txt_data) as f:
@@ -69,15 +70,16 @@ def load_n_features(bin_data, len_feature, n):
     bf = open(bin_data, 'rb')
     id_element = 0
     while True:
-        for i in range(0,n):
-            try:
+        try:
+            for i in range(0,n):
                 data = array.array('f')
                 data.fromfile(bf, len_feature)
                 result.append(data)
                 id_element += 1
                 bf.seek((id_element * len_feature) * 4, os.SEEK_SET)
-            except:
-                break
+            return result
+        except:
+            break
     return result
 
 def compare_features(feature, feature_id, list_classes, bin_data, dist):
@@ -146,6 +148,35 @@ def get_ap(relevant_id, list_id):
             n_relevants += 1.0
             ap = ap + (n_relevants / (i + 1.0))
     return (ap / n_relevants)
+
+def make_pca(data_name, len_ini, len_fin, num_element, path_out):
+    f = load_n_features(data_name, len_ini, num_element)
+    pca = PCA(n_components=len_fin)
+    pca.fit(f)
+    with open(path_out, 'wb') as fid:
+        cPickle.dump(pca, fid)
+
+def apply_pca(data_name, len_feature ,pca_data, data_out):
+    with open(pca_data, 'rb') as fid:
+        pca = cPickle.load(fid)
+        bf = open(data_name, 'rb')
+        id_element = 0
+        output_file = open(data_out, 'wb')
+        while True:
+            try:
+                data = array.array('f')
+                data.fromfile(bf, len_feature)
+                print id_element
+                transform_data = pca.transform(data)
+                float_array = array.array('f', transform_data[0])
+                float_array.tofile(output_file)
+                id_element += 1
+                bf.seek((id_element * len_feature) * 4, os.SEEK_SET)
+            except:
+                print "error"
+                break
+        bf.close()
+        output_file.close()
 
 #txt_data = "/home/sebastian/Escritorio/datos_recibidos/val_pascal.txt"
 #path_to_bin = "/home/sebastian/Escritorio/datos_recibidos/pascal_4096_result.bin"
