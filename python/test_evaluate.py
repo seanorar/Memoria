@@ -40,7 +40,9 @@ path_xmls = "/home/sormeno/Desktop/videos/1/bbox_data.txt"
 data_to_graphs(txt_data, path_imgs, path_xmls, prototxt_p, caffemodel_p, "gpu", "/home/sormeno/mdata_pascal_1")
 data_to_graphs(txt_data, path_imgs, path_xmls, prototxt_i, caffemodel_i, "gpu", "/home/sormeno/mdata_imagenet_1")
 """
-#plot_data_vs_trsh("mdata",2)
+
+plot_data_vs_trsh("mdata",6)
+plot_presicion_vs_recall("mdata",6)
 
 """
 prototxt = "/home/sebastian/Escritorio/data_app/test_pascal.prototxt"
